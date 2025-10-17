@@ -44,27 +44,27 @@ const WelcomeModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="welcome-title"
     >
       <div
-        className="bg-gradient-to-br from-base-200 to-base-300 p-8 rounded-2xl max-w-lg w-full shadow-2xl border border-base-content/10"
+        className="bg-gradient-to-br from-base-200 to-base-300 p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl border border-base-content/10 max-h-[90vh] overflow-y-auto"
         onKeyDown={handleKeyDown}
         tabIndex={-1}
       >
-        <div className="text-center mb-6">
-          <div className="text-6xl mb-4">🎵</div>
-          <h2 id="welcome-title" className="text-3xl font-bold text-primary mb-2">
+        <div className="text-center mb-4 sm:mb-6">
+          <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🎵</div>
+          <h2 id="welcome-title" className="text-2xl sm:text-3xl font-bold text-primary mb-2">
             Welcome to BlockBoom!
           </h2>
-          <p className="text-base-content/70">The ultimate decentralized music voting game</p>
+          <p className="text-sm sm:text-base text-base-content/70">The ultimate decentralized music voting game</p>
         </div>
 
-        <div className="space-y-4 text-sm">
-          <div className="bg-primary/10 p-4 rounded-lg">
-            <h3 className="font-semibold text-primary mb-2">🎮 How to Play</h3>
+        <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm">
+          <div className="bg-primary/10 p-3 sm:p-4 rounded-lg">
+            <h3 className="font-semibold text-primary mb-2 text-sm sm:text-base">🎮 How to Play</h3>
             <ol className="space-y-1 text-left">
               <li>1. Create a new game or join an existing one</li>
               <li>2. Add your favorite songs (max 5 per game)</li>
@@ -73,8 +73,8 @@ const WelcomeModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </ol>
           </div>
 
-          <div className="bg-accent/10 p-4 rounded-lg">
-            <h3 className="font-semibold text-accent mb-2">📋 Game Rules</h3>
+          <div className="bg-accent/10 p-3 sm:p-4 rounded-lg">
+            <h3 className="font-semibold text-accent mb-2 text-sm sm:text-base">📋 Game Rules</h3>
             <ul className="space-y-1 text-left">
               <li>• Minimum bet: 0.001 ETH</li>
               <li>• Game ends when 10 people vote</li>
@@ -85,7 +85,7 @@ const WelcomeModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
 
         <button
-          className="btn btn-primary w-full mt-6 text-lg font-semibold"
+          className="btn btn-primary w-full mt-4 sm:mt-6 text-base sm:text-lg font-semibold min-h-[44px]"
           onClick={onClose}
           onKeyDown={e => e.key === "Enter" && onClose()}
           tabIndex={0}
@@ -111,37 +111,37 @@ const GameStatusCards: React.FC<{ game: GameStatus }> = ({ game }) => {
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <div className="stat bg-gradient-to-br from-base-200 to-base-300 rounded-xl shadow-lg border border-base-content/10">
-        <div className="stat-figure text-2xl">{getStatusIcon()}</div>
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
+      <div className="stat bg-gradient-to-br from-base-200 to-base-300 rounded-lg sm:rounded-xl shadow-lg border border-base-content/10 p-2 sm:p-4">
+        <div className="stat-figure text-lg sm:text-2xl">{getStatusIcon()}</div>
         <div className="stat-title text-xs font-medium">Game Status</div>
-        <div className={`stat-value text-lg ${getStatusColor()}`}>
+        <div className={`stat-value text-sm sm:text-lg ${getStatusColor()}`}>
           {game.gameExists ? (game.gameActive ? "Active" : "Ended") : "No Game"}
         </div>
       </div>
 
-      <div className="stat bg-gradient-to-br from-primary/10 to-primary/20 rounded-xl shadow-lg border border-primary/20">
-        <div className="stat-figure text-2xl">🎵</div>
+      <div className="stat bg-gradient-to-br from-primary/10 to-primary/20 rounded-lg sm:rounded-xl shadow-lg border border-primary/20 p-2 sm:p-4">
+        <div className="stat-figure text-lg sm:text-2xl">🎵</div>
         <div className="stat-title text-xs font-medium">Songs</div>
-        <div className="stat-value text-lg text-primary">{game.songCount.toString()}/5</div>
+        <div className="stat-value text-sm sm:text-lg text-primary">{game.songCount.toString()}/5</div>
         <div className="stat-desc">
-          <progress className="progress progress-primary w-full h-2" value={Number(game.songCount)} max="5" />
+          <progress className="progress progress-primary w-full h-1 sm:h-2" value={Number(game.songCount)} max="5" />
         </div>
       </div>
 
-      <div className="stat bg-gradient-to-br from-accent/10 to-accent/20 rounded-xl shadow-lg border border-accent/20">
-        <div className="stat-figure text-2xl">🗳️</div>
+      <div className="stat bg-gradient-to-br from-accent/10 to-accent/20 rounded-lg sm:rounded-xl shadow-lg border border-accent/20 p-2 sm:p-4">
+        <div className="stat-figure text-lg sm:text-2xl">🗳️</div>
         <div className="stat-title text-xs font-medium">Votes</div>
-        <div className="stat-value text-lg text-accent">{game.totalVotes.toString()}/10</div>
+        <div className="stat-value text-sm sm:text-lg text-accent">{game.totalVotes.toString()}/10</div>
         <div className="stat-desc">
-          <progress className="progress progress-accent w-full h-2" value={Number(game.totalVotes)} max="10" />
+          <progress className="progress progress-accent w-full h-1 sm:h-2" value={Number(game.totalVotes)} max="10" />
         </div>
       </div>
 
-      <div className="stat bg-gradient-to-br from-secondary/10 to-secondary/20 rounded-xl shadow-lg border border-secondary/20">
-        <div className="stat-figure text-2xl">💰</div>
+      <div className="stat bg-gradient-to-br from-secondary/10 to-secondary/20 rounded-lg sm:rounded-xl shadow-lg border border-secondary/20 p-2 sm:p-4">
+        <div className="stat-figure text-lg sm:text-2xl">💰</div>
         <div className="stat-title text-xs font-medium">Prize Pool</div>
-        <div className="stat-value text-lg text-secondary">
+        <div className="stat-value text-sm sm:text-lg text-secondary">
           {parseFloat(formatEther(game.prizePool)).toFixed(4)} ETH
         </div>
       </div>
@@ -160,26 +160,26 @@ const SongCard: React.FC<{
 }> = ({ song, isVoting = false, rank, onMoveUp, onMoveDown }) => {
   return (
     <div
-      className={`group relative p-4 rounded-xl transition-all duration-300 hover:shadow-lg ${
+      className={`group relative p-3 sm:p-4 rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-lg ${
         isVoting ? "bg-gradient-to-r from-primary/10 to-accent/10 border-2 border-primary/30" : "bg-base-100"
       }`}
     >
       {isVoting && rank && (
-        <div className="absolute -top-2 -left-2 w-8 h-8 bg-primary text-primary-content rounded-full flex items-center justify-center font-bold text-sm shadow-lg">
+        <div className="absolute -top-1 -left-1 sm:-top-2 sm:-left-2 w-6 h-6 sm:w-8 sm:h-8 bg-primary text-primary-content rounded-full flex items-center justify-center font-bold text-xs sm:text-sm shadow-lg">
           {rank}
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-start sm:items-center justify-between gap-2 sm:gap-4">
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-lg truncate">{song.title}</h3>
-          <p className="text-sm text-base-content/70 truncate">{song.author}</p>
-          <div className="flex items-center gap-2 mt-2">
+          <h3 className="font-bold text-base sm:text-lg truncate">{song.title}</h3>
+          <p className="text-xs sm:text-sm text-base-content/70 truncate">{song.author}</p>
+          <div className="flex items-center gap-1 sm:gap-2 mt-1 sm:mt-2">
             <span className="text-xs text-base-content/50">Added by:</span>
             <Address address={song.addedBy as `0x${string}`} />
           </div>
           {song.url && (
-            <div className="mt-2">
+            <div className="mt-1 sm:mt-2">
               <a
                 href={song.url}
                 target="_blank"
@@ -194,10 +194,10 @@ const SongCard: React.FC<{
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           {!isVoting && (
             <div className="text-right">
-              <div className="text-2xl font-bold text-primary">{song.votes.toString()}</div>
+              <div className="text-lg sm:text-2xl font-bold text-primary">{song.votes.toString()}</div>
               <div className="text-xs text-base-content/50">votes</div>
             </div>
           )}
@@ -205,7 +205,7 @@ const SongCard: React.FC<{
           {isVoting && onMoveUp && onMoveDown && (
             <div className="flex flex-col gap-1">
               <button
-                className="btn btn-xs btn-circle btn-ghost hover:btn-primary"
+                className="btn btn-xs btn-circle btn-ghost hover:btn-primary min-h-[32px] min-w-[32px]"
                 onClick={onMoveUp}
                 disabled={rank === 1}
                 aria-label={`Move song up from position ${rank}`}
@@ -214,7 +214,7 @@ const SongCard: React.FC<{
                 ↑
               </button>
               <button
-                className="btn btn-xs btn-circle btn-ghost hover:btn-primary"
+                className="btn btn-xs btn-circle btn-ghost hover:btn-primary min-h-[32px] min-w-[32px]"
                 onClick={onMoveDown}
                 disabled={rank === 5}
                 aria-label={`Move song down from position ${rank}`}
@@ -244,12 +244,14 @@ const CreateGameCard: React.FC<{ onCreateGame: () => void; isLoading: boolean }>
 
   return (
     <div className="card bg-gradient-to-br from-primary/10 to-accent/10 shadow-xl border border-primary/20">
-      <div className="card-body text-center">
-        <div className="text-6xl mb-4">🎮</div>
-        <h2 className="card-title text-2xl justify-center mb-2">Create New Game</h2>
-        <p className="text-base-content/70 mb-6">Start a fresh BlockBoom session and invite friends to play!</p>
+      <div className="card-body text-center p-4 sm:p-6">
+        <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🎮</div>
+        <h2 className="card-title text-xl sm:text-2xl justify-center mb-2">Create New Game</h2>
+        <p className="text-sm sm:text-base text-base-content/70 mb-4 sm:mb-6">
+          Start a fresh BlockBoom session and invite friends to play!
+        </p>
         <button
-          className={`btn btn-primary btn-lg w-full ${isLoading ? "loading" : ""}`}
+          className={`btn btn-primary btn-lg w-full min-h-[44px] ${isLoading ? "loading" : ""}`}
           onClick={onCreateGame}
           onKeyDown={handleKeyDown}
           disabled={isLoading}
@@ -295,21 +297,21 @@ const AddSongCard: React.FC<{
 
   return (
     <div className="card bg-gradient-to-br from-accent/10 to-secondary/10 shadow-xl border border-accent/20">
-      <div className="card-body">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="text-3xl">🎵</div>
-          <h2 className="card-title text-xl">Add Your Song</h2>
+      <div className="card-body p-4 sm:p-6">
+        <div className="flex items-center gap-2 sm:gap-3 mb-4">
+          <div className="text-2xl sm:text-3xl">🎵</div>
+          <h2 className="card-title text-lg sm:text-xl">Add Your Song</h2>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Song Title</span>
+              <span className="label-text font-medium text-sm sm:text-base">Song Title</span>
             </label>
             <input
               type="text"
               placeholder="Enter song title..."
-              className="input input-bordered w-full focus:input-primary"
+              className="input input-bordered w-full focus:input-primary min-h-[44px] text-sm sm:text-base"
               value={title}
               onChange={e => setTitle(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -321,12 +323,12 @@ const AddSongCard: React.FC<{
 
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Author Name</span>
+              <span className="label-text font-medium text-sm sm:text-base">Author Name</span>
             </label>
             <input
               type="text"
               placeholder="Enter author name..."
-              className="input input-bordered w-full focus:input-primary"
+              className="input input-bordered w-full focus:input-primary min-h-[44px] text-sm sm:text-base"
               value={author}
               onChange={e => setAuthor(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -338,12 +340,12 @@ const AddSongCard: React.FC<{
 
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Song URL</span>
+              <span className="label-text font-medium text-sm sm:text-base">Song URL</span>
             </label>
             <input
               type="url"
               placeholder="https://example.com/song.mp3"
-              className="input input-bordered w-full focus:input-primary"
+              className="input input-bordered w-full focus:input-primary min-h-[44px] text-sm sm:text-base"
               value={url}
               onChange={e => setUrl(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -352,12 +354,14 @@ const AddSongCard: React.FC<{
               aria-label="Song URL input"
             />
             <label className="label">
-              <span className="label-text-alt text-base-content/60">Link to the song (YouTube, SoundCloud, etc.)</span>
+              <span className="label-text-alt text-xs sm:text-sm text-base-content/60">
+                Link to the song (YouTube, SoundCloud, etc.)
+              </span>
             </label>
           </div>
 
           <button
-            className={`btn btn-accent w-full ${isLoading ? "loading" : ""}`}
+            className={`btn btn-accent w-full min-h-[44px] text-sm sm:text-base ${isLoading ? "loading" : ""}`}
             onClick={handleSubmit}
             onKeyDown={handleKeyDown}
             disabled={isDisabled}
@@ -422,27 +426,29 @@ const VotingCard: React.FC<{
 
   return (
     <div className="card bg-gradient-to-br from-secondary/10 to-primary/10 shadow-xl border border-secondary/20">
-      <div className="card-body">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="text-3xl">🗳️</div>
-          <h2 className="card-title text-xl">Cast Your Vote</h2>
+      <div className="card-body p-4 sm:p-6">
+        <div className="flex items-center gap-2 sm:gap-3 mb-4">
+          <div className="text-2xl sm:text-3xl">🗳️</div>
+          <h2 className="card-title text-lg sm:text-xl">Cast Your Vote</h2>
         </div>
 
-        <p className="text-base-content/70 mb-6">Rank all songs from best to worst and place your ETH bet!</p>
+        <p className="text-sm sm:text-base text-base-content/70 mb-4 sm:mb-6">
+          Rank all songs from best to worst and place your ETH bet!
+        </p>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Bet Amount (ETH)</span>
+              <span className="label-text font-medium text-sm sm:text-base">Bet Amount (ETH)</span>
             </label>
             <EtherInput value={voteAmount} onChange={setVoteAmount} placeholder="0.001" disabled={isLoading} />
             <label className="label">
-              <span className="label-text-alt text-error">Minimum bet: 0.001 ETH</span>
+              <span className="label-text-alt text-xs sm:text-sm text-error">Minimum bet: 0.001 ETH</span>
             </label>
           </div>
 
-          <div className="space-y-3">
-            <h3 className="font-semibold text-lg">Rank Your Songs</h3>
+          <div className="space-y-2 sm:space-y-3">
+            <h3 className="font-semibold text-base sm:text-lg">Rank Your Songs</h3>
             <div className="space-y-2">
               {songs &&
                 rankings.map((songIndex, rankIndex) => (
@@ -460,7 +466,7 @@ const VotingCard: React.FC<{
           </div>
 
           <button
-            className={`btn btn-secondary btn-lg w-full ${isLoading ? "loading" : ""}`}
+            className={`btn btn-secondary btn-lg w-full min-h-[44px] text-sm sm:text-base ${isLoading ? "loading" : ""}`}
             onClick={handleSubmitVote}
             onKeyDown={handleKeyDown}
             disabled={isDisabled}
@@ -479,14 +485,14 @@ const VotingCard: React.FC<{
 const VotedConfirmationCard: React.FC = () => {
   return (
     <div className="card bg-gradient-to-br from-success/20 to-success/30 shadow-xl border border-success/30">
-      <div className="card-body text-center">
-        <div className="text-6xl mb-4">✅</div>
-        <h2 className="card-title text-2xl justify-center text-success mb-2">Vote Submitted!</h2>
-        <p className="text-base-content/70">
+      <div className="card-body text-center p-4 sm:p-6">
+        <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">✅</div>
+        <h2 className="card-title text-xl sm:text-2xl justify-center text-success mb-2">Vote Submitted!</h2>
+        <p className="text-sm sm:text-base text-base-content/70">
           Youve successfully voted in this game. Waiting for other players to join...
         </p>
-        <div className="mt-4 p-4 bg-success/10 rounded-lg">
-          <p className="text-sm font-medium">Game will end when 10 people have voted</p>
+        <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-success/10 rounded-lg">
+          <p className="text-xs sm:text-sm font-medium">Game will end when 10 people have voted</p>
         </div>
       </div>
     </div>
@@ -497,24 +503,24 @@ const VotedConfirmationCard: React.FC = () => {
 const SongsListCard: React.FC<{ songs: Song[] }> = ({ songs }) => {
   return (
     <div className="card bg-gradient-to-br from-base-200 to-base-300 shadow-xl border border-base-content/10">
-      <div className="card-body">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="text-3xl">🎵</div>
-          <h2 className="card-title text-xl">Current Songs</h2>
-          <div className="badge badge-primary badge-lg">{songs.length}/5</div>
+      <div className="card-body p-4 sm:p-6">
+        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <div className="text-2xl sm:text-3xl">🎵</div>
+          <h2 className="card-title text-lg sm:text-xl">Current Songs</h2>
+          <div className="badge badge-primary badge-sm sm:badge-lg">{songs.length}/5</div>
         </div>
 
         {songs.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {songs.map((song, index) => (
               <SongCard key={index} song={song} index={index} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="text-4xl mb-4">🎼</div>
-            <p className="text-base-content/50 text-lg">No songs added yet</p>
-            <p className="text-base-content/30 text-sm">Be the first to add a song!</p>
+          <div className="text-center py-8 sm:py-12">
+            <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">🎼</div>
+            <p className="text-base-content/50 text-base sm:text-lg">No songs added yet</p>
+            <p className="text-base-content/30 text-xs sm:text-sm">Be the first to add a song!</p>
           </div>
         )}
       </div>
@@ -627,11 +633,13 @@ const Home: NextPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
-          <div className="text-8xl mb-6">🎵</div>
-          <h1 className="text-5xl font-bold text-primary mb-4">BlockBoom</h1>
-          <p className="text-xl text-base-content/70 mb-8">Please connect your wallet to start playing!</p>
+          <div className="text-6xl sm:text-8xl mb-4 sm:mb-6">🎵</div>
+          <h1 className="text-3xl sm:text-5xl font-bold text-primary mb-3 sm:mb-4">BlockBoom</h1>
+          <p className="text-lg sm:text-xl text-base-content/70 mb-6 sm:mb-8">
+            Please connect your wallet to start playing!
+          </p>
           <div className="animate-pulse">
-            <div className="w-32 h-32 bg-primary/20 rounded-full mx-auto"></div>
+            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-primary/20 rounded-full mx-auto"></div>
           </div>
         </div>
       </div>
@@ -643,16 +651,18 @@ const Home: NextPage = () => {
       {/* Welcome Modal */}
       {showInstructions && <WelcomeModal onClose={() => setShowInstructions(false)} />}
 
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="text-8xl mb-4">🎵</div>
-          <h1 className="text-6xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="text-6xl sm:text-8xl mb-3 sm:mb-4">🎵</div>
+          <h1 className="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-3 sm:mb-4">
             BlockBoom
           </h1>
-          <p className="text-xl text-base-content/70 mb-6">Song of the Day - Decentralized Music Voting</p>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-base-200 rounded-full">
-            <span className="text-sm text-base-content/70">Connected as:</span>
+          <p className="text-lg sm:text-xl text-base-content/70 mb-4 sm:mb-6">
+            Song of the Day - Decentralized Music Voting
+          </p>
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-base-200 rounded-full">
+            <span className="text-xs sm:text-sm text-base-content/70">Connected as:</span>
             <Address address={connectedAddress} />
           </div>
         </div>
@@ -661,9 +671,9 @@ const Home: NextPage = () => {
         {game && <GameStatusCards game={game} />}
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Column - Game Actions */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {game && !game.gameExists && (
               <CreateGameCard onCreateGame={handleCreateGame} isLoading={loading.creatingGame} />
             )}
@@ -686,7 +696,7 @@ const Home: NextPage = () => {
           </div>
 
           {/* Right Column - Songs List */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <SongsListCard songs={(songs as unknown as Song[]) || []} />
           </div>
         </div>
