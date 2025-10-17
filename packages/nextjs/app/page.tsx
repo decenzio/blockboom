@@ -13,7 +13,6 @@ import {
   VotingCard,
   WelcomeModal,
 } from "~~/components/game";
-import { Address } from "~~/components/scaffold-eth";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import type { GameStatus, LoadingState, Song } from "~~/types/game";
 
@@ -141,21 +140,6 @@ const Home: NextPage = () => {
       {showInstructions && <WelcomeModal onClose={() => setShowInstructions(false)} />}
 
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
-        {/* Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <div className="text-6xl sm:text-8xl mb-3 sm:mb-4">🎵</div>
-          <h1 className="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-3 sm:mb-4">
-            BlockBoom
-          </h1>
-          <p className="text-lg sm:text-xl text-base-content/70 mb-4 sm:mb-6">
-            Song of the Day - Decentralized Music Voting
-          </p>
-          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-base-200 rounded-full">
-            <span className="text-xs sm:text-sm text-base-content/70">Connected as:</span>
-            <Address address={connectedAddress} />
-          </div>
-        </div>
-
         {/* Game Status */}
         {game && <GameStatusCards game={game} />}
 
