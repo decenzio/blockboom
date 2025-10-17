@@ -3,8 +3,7 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
 
 /**
- * Deploys a contract named "Rank5Game" using the deployer account.
- * The Rank5Game contract has no constructor arguments.
+ * Deploys BlockBoom using the deployer account.
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
@@ -22,27 +21,23 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("Rank5Game", {
+  // Deploy BlockBoom (frontend expects this contract name and ABI)
+  const blockBoomDeployment = await deploy("BlockBoom", {
     from: deployer,
-    // Contract constructor arguments - Rank5Game has no constructor arguments
-    args: [],
+    args: [deployer],
     log: true,
-    // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
-    // automatically mining the contract deployment transaction. There is no effect on live networks.
     autoMine: true,
   });
 
-  // Get the deployed contract to interact with it after deploying.
-  const rank5Game = await hre.ethers.getContract<Contract>("Rank5Game", deployer);
-  console.log("🎮 Rank5Game deployed!");
-  console.log("📊 Entry fee:", await rank5Game.ENTRY_FEE(), "wei");
-  console.log("🔢 Number of items:", await rank5Game.NUM_ITEMS());
-  console.log("👥 Max players:", await rank5Game.MAX_PLAYERS());
-  console.log("📋 Current phase:", await rank5Game.phase());
+  const blockBoom = await hre.ethers.getContract<Contract>("BlockBoom", deployer);
+  console.log("🎵 BlockBoom deployed!", blockBoomDeployment.address);
+  console.log("🔢 MAX_SONGS:", await blockBoom.MAX_SONGS());
+  console.log("🗳️ VOTE_THRESHOLD:", await blockBoom.VOTE_THRESHOLD());
+  console.log("💸 MIN_BET_AMOUNT:", await blockBoom.MIN_BET_AMOUNT());
 };
 
 export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
-// e.g. yarn deploy --tags Rank5Game
-deployYourContract.tags = ["Rank5Game"];
+// e.g. yarn deploy --tags BlockBoom
+deployYourContract.tags = ["BlockBoom"];
