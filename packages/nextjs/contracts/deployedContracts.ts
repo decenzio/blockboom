@@ -6,20 +6,31 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
   31337: {
-    Rank5Game: {
+    BlockBoom: {
       address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "_owner",
+              type: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
         {
           anonymous: false,
           inputs: [
             {
-              indexed: false,
-              internalType: "string",
-              name: "item",
-              type: "string",
+              indexed: true,
+              internalType: "address",
+              name: "creator",
+              type: "address",
             },
           ],
-          name: "ItemAdded",
+          name: "GameCreated",
           type: "event",
         },
         {
@@ -28,47 +39,103 @@ const deployedContracts = {
             {
               indexed: true,
               internalType: "address",
-              name: "player",
+              name: "winner",
               type: "address",
             },
             {
               indexed: false,
-              internalType: "uint8[3]",
-              name: "order",
-              type: "uint8[3]",
+              internalType: "uint256",
+              name: "prizeAmount",
+              type: "uint256",
             },
           ],
-          name: "RankingSubmitted",
+          name: "GameEnded",
           type: "event",
         },
         {
           anonymous: false,
           inputs: [
             {
-              indexed: false,
-              internalType: "address[]",
-              name: "winners",
-              type: "address[]",
+              indexed: true,
+              internalType: "address",
+              name: "winner",
+              type: "address",
             },
             {
               indexed: false,
               internalType: "uint256",
-              name: "rewardPerWinner",
+              name: "amount",
               type: "uint256",
             },
           ],
-          name: "RoundCompleted",
+          name: "PrizeDistributed",
           type: "event",
         },
         {
           anonymous: false,
-          inputs: [],
-          name: "RoundReset",
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "adder",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "title",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "author",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "url",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "songIndex",
+              type: "uint256",
+            },
+          ],
+          name: "SongAdded",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "voter",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256[]",
+              name: "rankings",
+              type: "uint256[]",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "betAmount",
+              type: "uint256",
+            },
+          ],
+          name: "VoteCast",
           type: "event",
         },
         {
           inputs: [],
-          name: "ENTRY_FEE",
+          name: "MAX_SONGS",
           outputs: [
             {
               internalType: "uint256",
@@ -81,12 +148,12 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "MAX_PLAYERS",
+          name: "MIN_BET_AMOUNT",
           outputs: [
             {
-              internalType: "uint8",
+              internalType: "uint256",
               name: "",
-              type: "uint8",
+              type: "uint256",
             },
           ],
           stateMutability: "view",
@@ -94,12 +161,12 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "NUM_ITEMS",
+          name: "VOTE_THRESHOLD",
           outputs: [
             {
-              internalType: "uint8",
+              internalType: "uint256",
               name: "",
-              type: "uint8",
+              type: "uint256",
             },
           ],
           stateMutability: "view",
@@ -109,63 +176,42 @@ const deployedContracts = {
           inputs: [
             {
               internalType: "string",
-              name: "name",
+              name: "_title",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_author",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_url",
               type: "string",
             },
           ],
-          name: "addItem",
+          name: "addSong",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [],
-          name: "getCurrentItems",
-          outputs: [
-            {
-              internalType: "string[3]",
-              name: "",
-              type: "string[3]",
-            },
-          ],
-          stateMutability: "view",
+          name: "createGame",
+          outputs: [],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [],
-          name: "getPlayers",
-          outputs: [
-            {
-              internalType: "address[]",
-              name: "",
-              type: "address[]",
-            },
-          ],
-          stateMutability: "view",
+          name: "emergencyEndGame",
+          outputs: [],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [],
-          name: "getPrizePool",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          name: "hasRanked",
+          name: "gameActive",
           outputs: [
             {
               internalType: "bool",
@@ -177,19 +223,13 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          name: "items",
+          inputs: [],
+          name: "gameExists",
           outputs: [
             {
-              internalType: "string",
+              internalType: "bool",
               name: "",
-              type: "string",
+              type: "bool",
             },
           ],
           stateMutability: "view",
@@ -197,12 +237,39 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "itemsCount",
+          name: "getAllSongs",
           outputs: [
             {
-              internalType: "uint8",
+              components: [
+                {
+                  internalType: "string",
+                  name: "title",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "author",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "url",
+                  type: "string",
+                },
+                {
+                  internalType: "address",
+                  name: "addedBy",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "votes",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct BlockBoom.Song[]",
               name: "",
-              type: "uint8",
+              type: "tuple[]",
             },
           ],
           stateMutability: "view",
@@ -210,12 +277,32 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "phase",
+          name: "getGameStatus",
           outputs: [
             {
-              internalType: "enum Rank5Game.Phase",
-              name: "",
-              type: "uint8",
+              internalType: "bool",
+              name: "_gameExists",
+              type: "bool",
+            },
+            {
+              internalType: "bool",
+              name: "_gameActive",
+              type: "bool",
+            },
+            {
+              internalType: "uint256",
+              name: "_songCount",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_totalVotes",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_prizePool",
+              type: "uint256",
             },
           ],
           stateMutability: "view",
@@ -224,12 +311,47 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
+              internalType: "address",
+              name: "_user",
+              type: "address",
             },
           ],
-          name: "players",
+          name: "getUserVote",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "voter",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256[]",
+                  name: "songRankings",
+                  type: "uint256[]",
+                },
+                {
+                  internalType: "uint256",
+                  name: "betAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "bool",
+                  name: "hasVoted",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct BlockBoom.Vote",
+              name: "",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "owner",
           outputs: [
             {
               internalType: "address",
@@ -242,7 +364,7 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "prizePool",
+          name: "songCount",
           outputs: [
             {
               internalType: "uint256",
@@ -256,14 +378,134 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "uint8[3]",
-              name: "order",
-              type: "uint8[3]",
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
             },
           ],
-          name: "rankItems",
+          name: "songs",
+          outputs: [
+            {
+              internalType: "string",
+              name: "title",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "author",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "url",
+              type: "string",
+            },
+            {
+              internalType: "address",
+              name: "addedBy",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "votes",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalPrizePool",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalVotes",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256[]",
+              name: "_songRankings",
+              type: "uint256[]",
+            },
+          ],
+          name: "vote",
           outputs: [],
           stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "voters",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "votes",
+          outputs: [
+            {
+              internalType: "address",
+              name: "voter",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "betAmount",
+              type: "uint256",
+            },
+            {
+              internalType: "bool",
+              name: "hasVoted",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "withdraw",
+          outputs: [],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {

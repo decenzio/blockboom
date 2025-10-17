@@ -1,70 +1,180 @@
 "use client";
 
-import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import type { NextPage } from "next";
+import { parseEther } from "viem";
 import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { Address } from "~~/components/scaffold-eth";
+import {
+  AddSongCard,
+  CreateGameCard,
+  GameStatusCards,
+  SongsListCard,
+  VotedConfirmationCard,
+  VotingCard,
+  WelcomeModal,
+} from "~~/components/game";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import type { GameStatus, LoadingState, Song } from "~~/types/game";
 
+// Main Component
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
+  const [showInstructions, setShowInstructions] = useState(true);
+  const [songRankings, setSongRankings] = useState<number[]>([]);
+  const [loading, setLoading] = useState<LoadingState>({
+    creatingGame: false,
+    addingSong: false,
+    voting: false,
+  });
 
-  return (
-    <>
-      <div className="flex items-center flex-col grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-          </h1>
-          <div className="flex justify-center items-center space-x-2 flex-col">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={connectedAddress} />
-          </div>
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/app/page.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
-        </div>
+  // Contract reads
+  const { data: gameStatus } = useScaffoldReadContract({
+    contractName: "BlockBoom",
+    functionName: "getGameStatus",
+  });
 
-        <div className="grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col md:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
+  const { data: songs } = useScaffoldReadContract({
+    contractName: "BlockBoom",
+    functionName: "getAllSongs",
+  });
+
+  const { data: userVote } = useScaffoldReadContract({
+    contractName: "BlockBoom",
+    functionName: "getUserVote",
+    args: connectedAddress ? [connectedAddress as `0x${string}`] : [undefined],
+  });
+
+  // Contract writes
+  const { writeContractAsync: writeBlockBoom } = useScaffoldWriteContract("BlockBoom");
+
+  // Parse game status
+  const game: GameStatus | null = gameStatus
+    ? {
+        gameExists: gameStatus[0],
+        gameActive: gameStatus[1],
+        songCount: gameStatus[2],
+        totalVotes: gameStatus[3],
+        prizePool: gameStatus[4],
+      }
+    : null;
+
+  // Initialize song rankings when songs change
+  useEffect(() => {
+    if (songs && songs.length > 0) {
+      setSongRankings(Array.from({ length: songs.length }, (_, i) => i));
+    }
+  }, [songs]);
+
+  const handleCreateGame = useCallback(async () => {
+    setLoading(prev => ({ ...prev, creatingGame: true }));
+    try {
+      await writeBlockBoom({
+        functionName: "createGame",
+      });
+    } catch (error) {
+      console.error("Error creating game:", error);
+    } finally {
+      setLoading(prev => ({ ...prev, creatingGame: false }));
+    }
+  }, [writeBlockBoom]);
+
+  const handleAddSong = useCallback(
+    async (title: string, author: string, url: string) => {
+      setLoading(prev => ({ ...prev, addingSong: true }));
+      try {
+        await writeBlockBoom({
+          functionName: "addSong",
+          args: [title, author, url],
+        });
+      } catch (error) {
+        console.error("Error adding song:", error);
+      } finally {
+        setLoading(prev => ({ ...prev, addingSong: false }));
+      }
+    },
+    [writeBlockBoom],
+  );
+
+  const handleVote = useCallback(
+    async (amount: string, rankings: number[]) => {
+      setLoading(prev => ({ ...prev, voting: true }));
+      try {
+        await writeBlockBoom({
+          functionName: "vote",
+          args: [rankings.map(r => BigInt(r))],
+          value: parseEther(amount),
+        });
+      } catch (error) {
+        console.error("Error voting:", error);
+      } finally {
+        setLoading(prev => ({ ...prev, voting: false }));
+      }
+    },
+    [writeBlockBoom],
+  );
+
+  const handleRankingChange = useCallback((newRankings: number[]) => {
+    setSongRankings(newRankings);
+  }, []);
+
+  if (!connectedAddress) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="text-6xl sm:text-8xl mb-4 sm:mb-6">🎵</div>
+          <h1 className="text-3xl sm:text-5xl font-bold text-primary mb-3 sm:mb-4">BlockBoom</h1>
+          <p className="text-lg sm:text-xl text-base-content/70 mb-6 sm:mb-8">
+            Please connect your wallet to start playing!
+          </p>
+          <div className="animate-pulse">
+            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-primary/20 rounded-full mx-auto"></div>
           </div>
         </div>
       </div>
-    </>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200">
+      {/* Welcome Modal */}
+      {showInstructions && <WelcomeModal onClose={() => setShowInstructions(false)} />}
+
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
+        {/* Game Status */}
+        {game && <GameStatusCards game={game} />}
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+          {/* Left Column - Game Actions */}
+          <div className="space-y-4 sm:space-y-6">
+            {game && !game.gameExists && (
+              <CreateGameCard onCreateGame={handleCreateGame} isLoading={loading.creatingGame} />
+            )}
+
+            {game && game.gameExists && game.gameActive && game.songCount < 2n && (
+              <AddSongCard onAddSong={handleAddSong} isLoading={loading.addingSong} />
+            )}
+
+            {game && game.gameExists && game.gameActive && game.songCount === 2n && !userVote?.hasVoted && songs && (
+              <VotingCard
+                songs={songs as unknown as Song[]}
+                rankings={songRankings}
+                onRankingChange={handleRankingChange}
+                onVote={handleVote}
+                isLoading={loading.voting}
+              />
+            )}
+
+            {userVote?.hasVoted && <VotedConfirmationCard />}
+          </div>
+
+          {/* Right Column - Songs List */}
+          <div className="space-y-4 sm:space-y-6">
+            <SongsListCard songs={(songs as unknown as Song[]) || []} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

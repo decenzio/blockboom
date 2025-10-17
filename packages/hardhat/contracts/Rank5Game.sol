@@ -2,170 +2,204 @@
 pragma solidity ^0.8.25;
 
 /**
- * @title Rank5 Autonomous Game
- * @notice 5 items, 10 players. Each ranking costs 0.001 ETH.
- *         When 10th player submits, contract:
- *           1) Calculates cumulative ranking (Borda count)
- *           2) Finds player(s) closest to final order
- *           3) Splits and pays prize pool
- *           4) Resets for next round
+ * BlockBoom - Song of the Day Game Contract
+ * A decentralized music voting game where users can add songs and vote with ETH
  */
-contract Rank5Game {
-    uint256 public constant ENTRY_FEE = 1e15; // 0.001 ETH
-    uint8   public constant NUM_ITEMS = 3;
-    uint8   public constant MAX_PLAYERS = 3;
+contract BlockBoom {
+    address public immutable owner;
 
-    enum Phase { CollectingItems, CollectingRanks }
-    Phase public phase = Phase.CollectingItems;
+    bool public gameExists = false;
+    bool public gameActive = false;
+    uint256 public constant MAX_SONGS = 2;
+    uint256 public constant VOTE_THRESHOLD = 2;
+    uint256 public constant MIN_BET_AMOUNT = 0.001 ether;
 
-    string[NUM_ITEMS] public items;
-    uint8 public itemsCount;
-
-    address[] public players;
-    mapping(address => uint8[NUM_ITEMS]) private rankings;
-    mapping(address => bool) public hasRanked;
-
-    uint256 public prizePool;
-
-    event ItemAdded(string item);
-    event RankingSubmitted(address indexed player, uint8[NUM_ITEMS] order);
-    event RoundCompleted(address[] winners, uint256 rewardPerWinner);
-    event RoundReset();
-
-    // --------- External ---------
-
-    /// @notice Add an item name until 5 items exist, then switch to ranking phase
-    function addItem(string calldata name) external {
-        require(phase == Phase.CollectingItems, "not item phase");
-        require(bytes(name).length > 0, "empty name");
-        require(itemsCount < NUM_ITEMS, "already 5");
-
-        items[itemsCount] = name;
-        itemsCount++;
-        emit ItemAdded(name);
-
-        if (itemsCount == NUM_ITEMS) phase = Phase.CollectingRanks;
+    struct Song {
+        string title;
+        string author;
+        string url;
+        address addedBy;
+        uint256 votes;
     }
 
-    /// @notice Submit ranking (best→worst), costs 0.001 ETH
-    function rankItems(uint8[NUM_ITEMS] calldata order) external payable {
-        require(phase == Phase.CollectingRanks, "not ranking phase");
-        require(msg.value == ENTRY_FEE, "need 0.001 ETH");
-        require(!hasRanked[msg.sender], "already ranked");
-        _validatePermutation(order);
+    Song[] public songs;
+    uint256 public songCount = 0;
 
-        players.push(msg.sender);
-        hasRanked[msg.sender] = true;
-        rankings[msg.sender] = order;
-        prizePool += msg.value;
+    struct Vote {
+        address voter;
+        uint256[] songRankings;
+        uint256 betAmount;
+        bool hasVoted;
+    }
 
-        emit RankingSubmitted(msg.sender, order);
+    mapping(address => Vote) public votes;
+    address[] public voters;
+    uint256 public totalVotes = 0;
+    uint256 public totalPrizePool = 0;
 
-        if (players.length == MAX_PLAYERS) {
-            _finalizeRound();
+    event GameCreated(address indexed creator);
+    event SongAdded(address indexed adder, string title, string author, string url, uint256 songIndex);
+    event VoteCast(address indexed voter, uint256[] rankings, uint256 betAmount);
+    event GameEnded(address indexed winner, uint256 prizeAmount);
+    event PrizeDistributed(address indexed winner, uint256 amount);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the owner");
+        _;
+    }
+
+    modifier gameMustExist() {
+        require(gameExists, "Game does not exist");
+        _;
+    }
+
+    modifier gameMustBeActive() {
+        require(gameActive, "Game is not active");
+        _;
+    }
+
+    modifier hasNotVoted() {
+        require(!votes[msg.sender].hasVoted, "Already voted");
+        _;
+    }
+
+    modifier validSongCount() {
+        require(songCount < MAX_SONGS, "Song list is full");
+        _;
+    }
+
+    constructor(address _owner) {
+        owner = _owner;
+    }
+
+    function createGame() external {
+        require(!gameExists, "Game already exists");
+
+        gameExists = true;
+        gameActive = true;
+        songCount = 0;
+        totalVotes = 0;
+        totalPrizePool = 0;
+
+        delete songs;
+        for (uint256 i = 0; i < voters.length; i++) {
+            delete votes[voters[i]];
+        }
+        delete voters;
+
+        emit GameCreated(msg.sender);
+    }
+
+    function addSong(string memory _title, string memory _author, string memory _url)
+        external
+        gameMustExist
+        gameMustBeActive
+        validSongCount
+    {
+        require(bytes(_title).length > 0, "Title cannot be empty");
+        require(bytes(_author).length > 0, "Author cannot be empty");
+        require(bytes(_url).length > 0, "URL cannot be empty");
+
+        songs.push(Song({ title: _title, author: _author, url: _url, addedBy: msg.sender, votes: 0 }));
+        songCount++;
+
+        emit SongAdded(msg.sender, _title, _author, _url, songCount - 1);
+    }
+
+    function vote(uint256[] memory _songRankings)
+        external
+        payable
+        gameMustExist
+        gameMustBeActive
+        hasNotVoted
+    {
+        require(msg.value >= MIN_BET_AMOUNT, "Bet amount too low");
+        require(_songRankings.length == songCount, "Invalid ranking length");
+        require(songCount == MAX_SONGS, "Song list not full yet");
+        require(_isValidRanking(_songRankings), "Invalid song rankings");
+
+        votes[msg.sender] = Vote({ voter: msg.sender, songRankings: _songRankings, betAmount: msg.value, hasVoted: true });
+
+        voters.push(msg.sender);
+        totalVotes++;
+        totalPrizePool += msg.value;
+
+        emit VoteCast(msg.sender, _songRankings, msg.value);
+
+        if (totalVotes >= VOTE_THRESHOLD) {
+            _endGame();
         }
     }
 
-    // --------- View helpers ---------
+    function _endGame() internal {
+        gameActive = false;
 
-    function getCurrentItems() external view returns (string[NUM_ITEMS] memory) {
-        return items;
-    }
-
-    function getPlayers() external view returns (address[] memory) {
-        return players;
-    }
-
-    function getPrizePool() external view returns (uint256) {
-        return prizePool;
-    }
-
-    // --------- Internal logic ---------
-
-    function _finalizeRound() internal {
-        // --- 1. Compute cumulative item scores (Borda count) ---
-        uint16[NUM_ITEMS] memory scores;
-        for (uint8 p = 0; p < MAX_PLAYERS; p++) {
-            uint8[NUM_ITEMS] memory order = rankings[players[p]];
-            for (uint8 pos = 0; pos < NUM_ITEMS; pos++) {
-                scores[order[pos]] += uint16(NUM_ITEMS - pos); // 5..1 pts
+        for (uint256 i = 0; i < voters.length; i++) {
+            address voter = voters[i];
+            Vote memory voterVote = votes[voter];
+            for (uint256 j = 0; j < voterVote.songRankings.length; j++) {
+                uint256 songIndex = voterVote.songRankings[j];
+                uint256 points = songCount - j;
+                songs[songIndex].votes += points;
             }
         }
 
-        // --- 2. Sort items by total score to get final order ---
-        uint8[NUM_ITEMS] memory finalOrder = [uint8(0),1,2];
-        for (uint8 i = 0; i < NUM_ITEMS; i++) {
-            uint8 best = i;
-            for (uint8 j = i + 1; j < NUM_ITEMS; j++) {
-                if (scores[finalOrder[j]] > scores[finalOrder[best]]) best = j;
-            }
-            (finalOrder[i], finalOrder[best]) = (finalOrder[best], finalOrder[i]);
-        }
-
-        // --- 3. Score each player by how many positions match ---
-        uint8 maxMatch = 0;
-        address[] memory tmp = new address[](MAX_PLAYERS);
-        uint8 winCount = 0;
-
-        for (uint8 p = 0; p < MAX_PLAYERS; p++) {
-            uint8[NUM_ITEMS] memory ord = rankings[players[p]];
-            uint8 matches = 0;
-            for (uint8 k = 0; k < NUM_ITEMS; k++)
-                if (ord[k] == finalOrder[k]) matches++;
-
-            if (matches > maxMatch) {
-                maxMatch = matches;
-                winCount = 1;
-                tmp[0] = players[p];
-            } else if (matches == maxMatch) {
-                tmp[winCount++] = players[p];
+        uint256 winningSongIndex = 0;
+        uint256 maxVotes = songs[0].votes;
+        for (uint256 i = 1; i < songs.length; i++) {
+            if (songs[i].votes > maxVotes) {
+                maxVotes = songs[i].votes;
+                winningSongIndex = i;
             }
         }
 
-        // --- 4. Pay winners equally ---
-        address[] memory winners = new address[](winCount);
-        for (uint8 i = 0; i < winCount; i++) winners[i] = tmp[i];
-        uint256 reward = prizePool / winCount;
+        address winner = songs[winningSongIndex].addedBy;
+        emit GameEnded(winner, totalPrizePool);
 
-        for (uint8 i = 0; i < winCount; i++) {
-            (bool ok, ) = winners[i].call{value: reward}("");
-            require(ok, "payout failed");
-        }
-
-        emit RoundCompleted(winners, reward);
-
-        // --- 5. Reset state for next round ---
-        _resetState();
-    }
-
-    function _resetState() internal {
-        for (uint8 i = 0; i < NUM_ITEMS; i++) {
-            items[i] = "";
-        }
-        itemsCount = 0;
-
-        for (uint8 i = 0; i < players.length; i++) {
-            delete hasRanked[players[i]];
-            delete rankings[players[i]];
-        }
-        delete players;
-        prizePool = 0;
-        phase = Phase.CollectingItems;
-
-        emit RoundReset();
-    }
-
-    // --------- Utils ---------
-
-    function _validatePermutation(uint8[NUM_ITEMS] calldata order) internal pure {
-        bool[NUM_ITEMS] memory seen;
-        for (uint8 i = 0; i < NUM_ITEMS; i++) {
-            uint8 v = order[i];
-            require(v < NUM_ITEMS, "index out of range");
-            require(!seen[v], "duplicate");
-            seen[v] = true;
+        if (totalPrizePool > 0) {
+            (bool success, ) = winner.call{ value: totalPrizePool }("");
+            require(success, "Failed to send prize");
+            emit PrizeDistributed(winner, totalPrizePool);
         }
     }
 
-    receive() external payable { revert("no direct ETH"); }
+    function _isValidRanking(uint256[] memory _rankings) internal view returns (bool) {
+        if (_rankings.length != songCount) return false;
+        bool[] memory used = new bool[](songCount);
+        for (uint256 i = 0; i < _rankings.length; i++) {
+            uint256 songIndex = _rankings[i];
+            if (songIndex >= songCount || used[songIndex]) {
+                return false;
+            }
+            used[songIndex] = true;
+        }
+        return true;
+    }
+
+    function getAllSongs() external view returns (Song[] memory) {
+        return songs;
+    }
+
+    function getGameStatus()
+        external
+        view
+        returns (bool _gameExists, bool _gameActive, uint256 _songCount, uint256 _totalVotes, uint256 _prizePool)
+    {
+        return (gameExists, gameActive, songCount, totalVotes, totalPrizePool);
+    }
+
+    function getUserVote(address _user) external view returns (Vote memory) {
+        return votes[_user];
+    }
+
+    function emergencyEndGame() external onlyOwner {
+        gameActive = false;
+    }
+
+    function withdraw() external onlyOwner {
+        (bool success, ) = owner.call{ value: address(this).balance }("");
+        require(success, "Failed to send Ether");
+    }
+
+    receive() external payable {}
 }
