@@ -4,6 +4,8 @@ export interface Item {
   title: string;
   author: string;
   url: string;
+  adder?: string;
+  addedAt?: bigint | number;
 }
 
 export interface GameStatus {

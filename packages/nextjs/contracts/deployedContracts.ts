@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     Rank5Game: {
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      address: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
       abi: [
         {
           anonymous: false,
@@ -17,6 +17,18 @@ const deployedContracts = {
               internalType: "uint8",
               name: "index",
               type: "uint8",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "adder",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "addedAt",
+              type: "uint256",
             },
             {
               indexed: false,
@@ -51,9 +63,9 @@ const deployedContracts = {
             },
             {
               indexed: false,
-              internalType: "uint8[5]",
+              internalType: "uint8[3]",
               name: "order",
-              type: "uint8[5]",
+              type: "uint8[3]",
             },
           ],
           name: "RankingSubmitted",
@@ -174,10 +186,20 @@ const deployedContracts = {
                   name: "url",
                   type: "string",
                 },
+                {
+                  internalType: "address",
+                  name: "adder",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "addedAt",
+                  type: "uint256",
+                },
               ],
-              internalType: "struct Rank5Game.Item[5]",
+              internalType: "struct Rank5Game.Item[3]",
               name: "",
-              type: "tuple[5]",
+              type: "tuple[3]",
             },
           ],
           stateMutability: "view",
@@ -253,6 +275,16 @@ const deployedContracts = {
               name: "url",
               type: "string",
             },
+            {
+              internalType: "address",
+              name: "adder",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "addedAt",
+              type: "uint256",
+            },
           ],
           stateMutability: "view",
           type: "function",
@@ -318,9 +350,9 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "uint8[5]",
+              internalType: "uint8[3]",
               name: "order",
-              type: "uint8[5]",
+              type: "uint8[3]",
             },
           ],
           name: "rankItems",
@@ -334,7 +366,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 1,
+      deployedOnBlock: 7,
     },
   },
 } as const;

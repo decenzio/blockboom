@@ -1,5 +1,6 @@
 "use client";
 
+import { Address } from "~~/components/scaffold-eth";
 import type { Item } from "~~/types/game";
 
 interface SongCardProps {
@@ -40,6 +41,13 @@ const SongCard: React.FC<SongCardProps> = ({ song, isVoting = false, rank, onMov
               >
                 🎵 Listen to song
               </a>
+            </div>
+          )}
+          {!isVoting && (song.adder || song.addedAt) && (
+            <div className="mt-1 sm:mt-2 flex items-center gap-2 text-xs text-base-content/60">
+              <span>Added by</span>
+              {song.adder && <Address address={song.adder as `0x${string}`} size="xs" onlyEnsOrAddress />}
+              {song.addedAt !== undefined && <span>• {new Date(Number(song.addedAt) * 1000).toLocaleString()}</span>}
             </div>
           )}
         </div>

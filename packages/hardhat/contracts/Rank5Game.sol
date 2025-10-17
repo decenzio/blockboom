@@ -12,8 +12,8 @@ pragma solidity ^0.8.25;
  */
 contract Rank5Game {
     uint256 public constant ENTRY_FEE = 1e15; // 0.001 ETH
-    uint8   public constant NUM_ITEMS = 5;
-    uint8   public constant MAX_PLAYERS = 10;
+    uint8   public constant NUM_ITEMS = 3;
+    uint8   public constant MAX_PLAYERS = 2;
 
     enum Phase { CollectingItems, CollectingRanks }
     Phase public phase = Phase.CollectingItems;
@@ -22,6 +22,8 @@ contract Rank5Game {
         string author;
         string title;
         string url;
+        address adder;
+        uint256 addedAt;
     }
 
     struct ItemInput {
@@ -39,7 +41,7 @@ contract Rank5Game {
 
     uint256 public prizePool;
 
-    event ItemAdded(uint8 indexed index, string author, string title, string url);
+    event ItemAdded(uint8 indexed index, address indexed adder, uint256 addedAt, string author, string title, string url);
     event RankingSubmitted(address indexed player, uint8[NUM_ITEMS] order);
     event RoundCompleted(address[] winners, uint256 rewardPerWinner);
     event RoundReset();
@@ -52,8 +54,8 @@ contract Rank5Game {
         require(itemsCount < NUM_ITEMS, "items full");
         require(_isValidItemInput(item), "invalid item");
 
-        items[itemsCount] = Item({ author: item.author, title: item.title, url: item.url });
-        emit ItemAdded(itemsCount, item.author, item.title, item.url);
+        items[itemsCount] = Item({ author: item.author, title: item.title, url: item.url, adder: msg.sender, addedAt: block.timestamp });
+        emit ItemAdded(itemsCount, msg.sender, block.timestamp, item.author, item.title, item.url);
         itemsCount++;
 
         if (itemsCount == NUM_ITEMS) phase = Phase.CollectingRanks;
@@ -160,7 +162,7 @@ contract Rank5Game {
 
     function _resetState() internal {
         for (uint8 i = 0; i < NUM_ITEMS; i++) {
-            items[i] = Item({ author: "", title: "", url: "" });
+            items[i] = Item({ author: "", title: "", url: "", adder: address(0), addedAt: 0 });
         }
         itemsCount = 0;
 

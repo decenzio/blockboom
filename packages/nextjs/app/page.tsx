@@ -120,13 +120,7 @@ const Home: NextPage = () => {
     async (amount: string, rankings: number[]) => {
       setLoading(prev => ({ ...prev, voting: true }));
       try {
-        const orderTuple = [
-          rankings[0] ?? 0,
-          rankings[1] ?? 1,
-          rankings[2] ?? 2,
-          rankings[3] ?? 3,
-          rankings[4] ?? 4,
-        ] as const;
+        const orderTuple = [rankings[0] ?? 0, rankings[1] ?? 1, rankings[2] ?? 2] as const;
         await writeRank5({
           functionName: "rankItems",
           args: [orderTuple],
