@@ -4,73 +4,254 @@ pragma solidity >=0.8.0 <0.9.0;
 // Useful for debugging. Remove when deploying to a live network.
 import "hardhat/console.sol";
 
-// Use openzeppelin to inherit battle-tested implementations (ERC20, ERC721, etc)
-// import "@openzeppelin/contracts/access/Ownable.sol";
-
 /**
- * A smart contract that allows changing a state variable of the contract and tracking the changes
- * It also allows the owner to withdraw the Ether in the contract
- * @author BuidlGuidl
+ * BlockBoom - Song of the Day Game Contract
+ * A decentralized music voting game where users can add songs and vote with ETH
+ * @author BlockBoom Team
  */
-contract YourContract {
+contract BlockBoom {
     // State Variables
     address public immutable owner;
-    string public greeting = "Building Unstoppable Apps!!!";
-    bool public premium = false;
-    uint256 public totalCounter = 0;
-    mapping(address => uint) public userGreetingCounter;
-
-    // Events: a way to emit log statements from smart contract that can be listened to by external parties
-    event GreetingChange(address indexed greetingSetter, string newGreeting, bool premium, uint256 value);
-
-    // Constructor: Called once on contract deployment
-    // Check packages/hardhat/deploy/00_deploy_your_contract.ts
+    
+    // Game state
+    bool public gameExists = false;
+    bool public gameActive = false;
+    uint256 public constant MAX_SONGS = 5;
+    uint256 public constant VOTE_THRESHOLD = 10;
+    uint256 public constant MIN_BET_AMOUNT = 0.001 ether;
+    
+    // Song management
+    struct Song {
+        string title;
+        string author;
+        string url;
+        address addedBy;
+        uint256 votes;
+    }
+    
+    Song[] public songs;
+    uint256 public songCount = 0;
+    
+    // Voting system
+    struct Vote {
+        address voter;
+        uint256[] songRankings; // Array of song indices in order of preference
+        uint256 betAmount;
+        bool hasVoted;
+    }
+    
+    mapping(address => Vote) public votes;
+    address[] public voters;
+    uint256 public totalVotes = 0;
+    uint256 public totalPrizePool = 0;
+    
+    // Events
+    event GameCreated(address indexed creator);
+    event SongAdded(address indexed adder, string title, string author, string url, uint256 songIndex);
+    event VoteCast(address indexed voter, uint256[] rankings, uint256 betAmount);
+    event GameEnded(address indexed winner, uint256 prizeAmount);
+    event PrizeDistributed(address indexed winner, uint256 amount);
+    
+    // Modifiers
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the owner");
+        _;
+    }
+    
+    modifier gameMustExist() {
+        require(gameExists, "Game does not exist");
+        _;
+    }
+    
+    modifier gameMustBeActive() {
+        require(gameActive, "Game is not active");
+        _;
+    }
+    
+    modifier hasNotVoted() {
+        require(!votes[msg.sender].hasVoted, "Already voted");
+        _;
+    }
+    
+    modifier validSongCount() {
+        require(songCount < MAX_SONGS, "Song list is full");
+        _;
+    }
+    
     constructor(address _owner) {
         owner = _owner;
     }
-
-    // Modifier: used to define a set of rules that must be met before or after a function is executed
-    // Check the withdraw() function
-    modifier isOwner() {
-        // msg.sender: predefined variable that represents address of the account that called the current function
-        require(msg.sender == owner, "Not the Owner");
-        _;
-    }
-
+    
     /**
-     * Function that allows anyone to change the state variable "greeting" of the contract and increase the counters
-     *
-     * @param _newGreeting (string memory) - new greeting to save on the contract
+     * Create a new game
      */
-    function setGreeting(string memory _newGreeting) public payable {
-        // Print data to the hardhat chain console. Remove when deploying to a live network.
-        console.log("Setting new greeting '%s' from %s", _newGreeting, msg.sender);
-
-        // Change state variables
-        greeting = _newGreeting;
-        totalCounter += 1;
-        userGreetingCounter[msg.sender] += 1;
-
-        // msg.value: built-in global variable that represents the amount of ether sent with the transaction
-        if (msg.value > 0) {
-            premium = true;
-        } else {
-            premium = false;
+    function createGame() external {
+        require(!gameExists, "Game already exists");
+        
+        gameExists = true;
+        gameActive = true;
+        songCount = 0;
+        totalVotes = 0;
+        totalPrizePool = 0;
+        
+        // Clear previous data
+        delete songs;
+        for (uint256 i = 0; i < voters.length; i++) {
+            delete votes[voters[i]];
         }
-
-        // emit: keyword used to trigger an event
-        emit GreetingChange(msg.sender, _newGreeting, msg.value > 0, msg.value);
+        delete voters;
+        
+        emit GameCreated(msg.sender);
     }
-
+    
     /**
-     * Function that allows the owner to withdraw all the Ether in the contract
-     * The function can only be called by the owner of the contract as defined by the isOwner modifier
+     * Add a song to the game
      */
-    function withdraw() public isOwner {
-        (bool success, ) = owner.call{ value: address(this).balance }("");
+    function addSong(string memory _title, string memory _author, string memory _url) external gameMustExist gameMustBeActive validSongCount {
+        require(bytes(_title).length > 0, "Title cannot be empty");
+        require(bytes(_author).length > 0, "Author cannot be empty");
+        require(bytes(_url).length > 0, "URL cannot be empty");
+        
+        songs.push(Song({
+            title: _title,
+            author: _author,
+            url: _url,
+            addedBy: msg.sender,
+            votes: 0
+        }));
+        
+        songCount++;
+        
+        emit SongAdded(msg.sender, _title, _author, _url, songCount - 1);
+    }
+    
+    /**
+     * Vote for songs with ETH bet
+     */
+    function vote(uint256[] memory _songRankings) external payable gameMustExist gameMustBeActive hasNotVoted {
+        require(msg.value >= MIN_BET_AMOUNT, "Bet amount too low");
+        require(_songRankings.length == songCount, "Invalid ranking length");
+        require(songCount == MAX_SONGS, "Song list not full yet");
+        
+        // Validate rankings (should contain all song indices exactly once)
+        require(_isValidRanking(_songRankings), "Invalid song rankings");
+        
+        votes[msg.sender] = Vote({
+            voter: msg.sender,
+            songRankings: _songRankings,
+            betAmount: msg.value,
+            hasVoted: true
+        });
+        
+        voters.push(msg.sender);
+        totalVotes++;
+        totalPrizePool += msg.value;
+        
+        emit VoteCast(msg.sender, _songRankings, msg.value);
+        
+        // Check if voting threshold is reached
+        if (totalVotes >= VOTE_THRESHOLD) {
+            _endGame();
+        }
+    }
+    
+    /**
+     * End the game and determine winner
+     */
+    function _endGame() internal {
+        gameActive = false;
+        
+        // Calculate song scores based on votes
+        for (uint256 i = 0; i < voters.length; i++) {
+            address voter = voters[i];
+            Vote memory voterVote = votes[voter];
+            
+            // Award points based on ranking (1st place = songCount points, 2nd = songCount-1, etc.)
+            for (uint256 j = 0; j < voterVote.songRankings.length; j++) {
+                uint256 songIndex = voterVote.songRankings[j];
+                uint256 points = songCount - j;
+                songs[songIndex].votes += points;
+            }
+        }
+        
+        // Find winning song
+        uint256 winningSongIndex = 0;
+        uint256 maxVotes = songs[0].votes;
+        
+        for (uint256 i = 1; i < songs.length; i++) {
+            if (songs[i].votes > maxVotes) {
+                maxVotes = songs[i].votes;
+                winningSongIndex = i;
+            }
+        }
+        
+        address winner = songs[winningSongIndex].addedBy;
+        
+        emit GameEnded(winner, totalPrizePool);
+        
+        // Distribute prize to winner
+        if (totalPrizePool > 0) {
+            (bool success, ) = winner.call{value: totalPrizePool}("");
+            require(success, "Failed to send prize");
+            emit PrizeDistributed(winner, totalPrizePool);
+        }
+    }
+    
+    /**
+     * Validate that ranking contains all song indices exactly once
+     */
+    function _isValidRanking(uint256[] memory _rankings) internal view returns (bool) {
+        if (_rankings.length != songCount) return false;
+        
+        bool[] memory used = new bool[](songCount);
+        
+        for (uint256 i = 0; i < _rankings.length; i++) {
+            uint256 songIndex = _rankings[i];
+            if (songIndex >= songCount || used[songIndex]) {
+                return false;
+            }
+            used[songIndex] = true;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Get all songs
+     */
+    function getAllSongs() external view returns (Song[] memory) {
+        return songs;
+    }
+    
+    /**
+     * Get game status
+     */
+    function getGameStatus() external view returns (bool _gameExists, bool _gameActive, uint256 _songCount, uint256 _totalVotes, uint256 _prizePool) {
+        return (gameExists, gameActive, songCount, totalVotes, totalPrizePool);
+    }
+    
+    /**
+     * Get votes for a specific address
+     */
+    function getUserVote(address _user) external view returns (Vote memory) {
+        return votes[_user];
+    }
+    
+    /**
+     * Emergency function to end game (owner only)
+     */
+    function emergencyEndGame() external onlyOwner {
+        gameActive = false;
+    }
+    
+    /**
+     * Withdraw contract balance (owner only)
+     */
+    function withdraw() external onlyOwner {
+        (bool success, ) = owner.call{value: address(this).balance}("");
         require(success, "Failed to send Ether");
     }
-
+    
     /**
      * Function that allows the contract to receive ETH
      */

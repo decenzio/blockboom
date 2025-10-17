@@ -3,12 +3,12 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
 
 /**
- * Deploys a contract named "YourContract" using the deployer account and
+ * Deploys a contract named "BlockBoom" using the deployer account and
  * constructor arguments set to the deployer address
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
-const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployBlockBoom: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   /*
     On localhost, the deployer account is the one that comes with Hardhat, which is already funded.
 
@@ -22,7 +22,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("YourContract", {
+  await deploy("BlockBoom", {
     from: deployer,
     // Contract constructor arguments
     args: [deployer],
@@ -33,12 +33,16 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   });
 
   // Get the deployed contract to interact with it after deploying.
-  const yourContract = await hre.ethers.getContract<Contract>("YourContract", deployer);
-  console.log("👋 Initial greeting:", await yourContract.greeting());
+  const blockBoom = await hre.ethers.getContract<Contract>("BlockBoom", deployer);
+  console.log("🎵 BlockBoom contract deployed!");
+  console.log("🎮 Game exists:", await blockBoom.gameExists());
+  console.log("🎯 Max songs:", await blockBoom.MAX_SONGS());
+  console.log("🗳️ Vote threshold:", await blockBoom.VOTE_THRESHOLD());
+  console.log("💰 Min bet amount:", await blockBoom.MIN_BET_AMOUNT());
 };
 
-export default deployYourContract;
+export default deployBlockBoom;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
-// e.g. yarn deploy --tags YourContract
-deployYourContract.tags = ["YourContract"];
+// e.g. yarn deploy --tags BlockBoom
+deployBlockBoom.tags = ["BlockBoom"];
