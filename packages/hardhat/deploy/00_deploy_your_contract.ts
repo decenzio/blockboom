@@ -3,8 +3,8 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
 
 /**
- * Deploys a contract named "YourContract" using the deployer account and
- * constructor arguments set to the deployer address
+ * Deploys a contract named "Rank5Game" using the deployer account.
+ * The Rank5Game contract has no constructor arguments.
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
@@ -22,10 +22,10 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("YourContract", {
+  await deploy("Rank5Game", {
     from: deployer,
-    // Contract constructor arguments
-    args: [deployer],
+    // Contract constructor arguments - Rank5Game has no constructor arguments
+    args: [],
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.
@@ -33,12 +33,16 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   });
 
   // Get the deployed contract to interact with it after deploying.
-  const yourContract = await hre.ethers.getContract<Contract>("YourContract", deployer);
-  console.log("👋 Initial greeting:", await yourContract.greeting());
+  const rank5Game = await hre.ethers.getContract<Contract>("Rank5Game", deployer);
+  console.log("🎮 Rank5Game deployed!");
+  console.log("📊 Entry fee:", await rank5Game.ENTRY_FEE(), "wei");
+  console.log("🔢 Number of items:", await rank5Game.NUM_ITEMS());
+  console.log("👥 Max players:", await rank5Game.MAX_PLAYERS());
+  console.log("📋 Current phase:", await rank5Game.phase());
 };
 
 export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
-// e.g. yarn deploy --tags YourContract
-deployYourContract.tags = ["YourContract"];
+// e.g. yarn deploy --tags Rank5Game
+deployYourContract.tags = ["Rank5Game"];
