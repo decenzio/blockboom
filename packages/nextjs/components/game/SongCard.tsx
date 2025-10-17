@@ -71,7 +71,7 @@ const SongCard: React.FC<SongCardProps> = ({ song, isVoting = false, rank, onMov
               <button
                 className="btn btn-xs btn-circle btn-ghost hover:btn-primary min-h-[32px] min-w-[32px]"
                 onClick={onMoveDown}
-                disabled={rank === 5}
+                disabled={rank === 2}
                 aria-label={`Move song down from position ${rank}`}
                 tabIndex={0}
               >

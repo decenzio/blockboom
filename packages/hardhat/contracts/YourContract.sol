@@ -16,8 +16,8 @@ contract BlockBoom {
     // Game state
     bool public gameExists = false;
     bool public gameActive = false;
-    uint256 public constant MAX_SONGS = 5;
-    uint256 public constant VOTE_THRESHOLD = 10;
+    uint256 public constant MAX_SONGS = 2;
+    uint256 public constant VOTE_THRESHOLD = 2;
     uint256 public constant MIN_BET_AMOUNT = 0.001 ether;
     
     // Song management

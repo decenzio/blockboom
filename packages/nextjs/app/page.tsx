@@ -151,11 +151,11 @@ const Home: NextPage = () => {
               <CreateGameCard onCreateGame={handleCreateGame} isLoading={loading.creatingGame} />
             )}
 
-            {game && game.gameExists && game.gameActive && game.songCount < 5n && (
+            {game && game.gameExists && game.gameActive && game.songCount < 2n && (
               <AddSongCard onAddSong={handleAddSong} isLoading={loading.addingSong} />
             )}
 
-            {game && game.gameExists && game.gameActive && game.songCount === 5n && !userVote?.hasVoted && songs && (
+            {game && game.gameExists && game.gameActive && game.songCount === 2n && !userVote?.hasVoted && songs && (
               <VotingCard
                 songs={songs as unknown as Song[]}
                 rankings={songRankings}

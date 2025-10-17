@@ -14,7 +14,7 @@ const SongsListCard: React.FC<SongsListCardProps> = ({ songs }) => {
         <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
           <div className="text-2xl sm:text-3xl">🎵</div>
           <h2 className="card-title text-lg sm:text-xl">Current Songs</h2>
-          <div className="badge badge-primary badge-sm sm:badge-lg">{songs.length}/5</div>
+          <div className="badge badge-primary badge-sm sm:badge-lg">{songs.length}/2</div>
         </div>
 
         {songs.length > 0 ? (
