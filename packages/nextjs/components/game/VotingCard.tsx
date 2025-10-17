@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import SongCard from "./SongCard";
 import { EtherInput } from "~~/components/scaffold-eth";
 import type { Song } from "~~/types/game";
@@ -15,26 +15,52 @@ interface VotingCardProps {
 
 const VotingCard: React.FC<VotingCardProps> = ({ songs, rankings, onRankingChange, onVote, isLoading }) => {
   const [voteAmount, setVoteAmount] = useState("0.001");
+  const [draggingRankIndex, setDraggingRankIndex] = useState<number | null>(null);
+  const [dragOverRankIndex, setDragOverRankIndex] = useState<number | null>(null);
+  const [keyboardDraggingIndex, setKeyboardDraggingIndex] = useState<number | null>(null);
 
-  const handleMoveUp = useCallback(
+  const moveItem = useCallback((list: number[], from: number, to: number) => {
+    if (from === to) return list;
+    const updated = [...list];
+    const [removed] = updated.splice(from, 1);
+    updated.splice(to, 0, removed);
+    return updated;
+  }, []);
+
+  const handleDragStart = useCallback(
     (index: number) => {
-      if (index === 0) return;
-      const newRankings = [...rankings];
-      [newRankings[index - 1], newRankings[index]] = [newRankings[index], newRankings[index - 1]];
-      onRankingChange(newRankings);
+      if (isLoading) return;
+      setDraggingRankIndex(index);
     },
-    [rankings, onRankingChange],
+    [isLoading],
   );
 
-  const handleMoveDown = useCallback(
-    (index: number) => {
-      if (index === rankings.length - 1) return;
-      const newRankings = [...rankings];
-      [newRankings[index], newRankings[index + 1]] = [newRankings[index + 1], newRankings[index]];
-      onRankingChange(newRankings);
+  const handleDragOverItem = useCallback(
+    (event: React.DragEvent<HTMLDivElement>, overIndex: number) => {
+      if (draggingRankIndex === null) return;
+      event.preventDefault();
+      if (overIndex !== dragOverRankIndex) {
+        setDragOverRankIndex(overIndex);
+      }
     },
-    [rankings, onRankingChange],
+    [draggingRankIndex, dragOverRankIndex],
   );
+
+  const handleDropOnItem = useCallback(
+    (overIndex: number) => {
+      if (draggingRankIndex === null) return;
+      const updated = moveItem(rankings, draggingRankIndex, overIndex);
+      onRankingChange(updated);
+      setDraggingRankIndex(null);
+      setDragOverRankIndex(null);
+    },
+    [draggingRankIndex, moveItem, onRankingChange, rankings],
+  );
+
+  const handleDragEnd = useCallback(() => {
+    setDraggingRankIndex(null);
+    setDragOverRankIndex(null);
+  }, []);
 
   const handleSubmitVote = useCallback(() => {
     if (voteAmount && parseFloat(voteAmount) >= 0.001) {
@@ -53,6 +79,62 @@ const VotingCard: React.FC<VotingCardProps> = ({ songs, rankings, onRankingChang
   );
 
   const isDisabled = !voteAmount || parseFloat(voteAmount) < 0.001 || isLoading;
+
+  const handleItemKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>, currentIndex: number) => {
+      // Start keyboard drag with Space or Enter when not already dragging
+      if (keyboardDraggingIndex === null && (event.key === " " || event.key === "Enter")) {
+        event.preventDefault();
+        setKeyboardDraggingIndex(currentIndex);
+        return;
+      }
+
+      // Cancel keyboard drag with Escape
+      if (keyboardDraggingIndex !== null && event.key === "Escape") {
+        event.preventDefault();
+        setKeyboardDraggingIndex(null);
+        return;
+      }
+
+      // Commit keyboard drag with Enter/Space
+      if (keyboardDraggingIndex !== null && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        setKeyboardDraggingIndex(null);
+        return;
+      }
+
+      if (keyboardDraggingIndex === null) return;
+
+      // Reorder with arrow keys while dragging
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (keyboardDraggingIndex <= 0) return;
+        const updated = moveItem(rankings, keyboardDraggingIndex, keyboardDraggingIndex - 1);
+        onRankingChange(updated);
+        setKeyboardDraggingIndex(prev => (prev === null ? null : prev - 1));
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (keyboardDraggingIndex >= rankings.length - 1) return;
+        const updated = moveItem(rankings, keyboardDraggingIndex, keyboardDraggingIndex + 1);
+        onRankingChange(updated);
+        setKeyboardDraggingIndex(prev => (prev === null ? null : prev + 1));
+        return;
+      }
+    },
+    [keyboardDraggingIndex, moveItem, onRankingChange, rankings],
+  );
+
+  const announcement = useMemo(() => {
+    if (draggingRankIndex !== null && dragOverRankIndex !== null) {
+      const song = songs[rankings[draggingRankIndex]];
+      const position = dragOverRankIndex + 1;
+      return `Moving ${song?.title} to position ${position}`;
+    }
+    return "";
+  }, [dragOverRankIndex, draggingRankIndex, rankings, songs]);
 
   return (
     <div className="card bg-gradient-to-br from-secondary/10 to-primary/10 shadow-xl border border-secondary/20">
@@ -79,19 +161,50 @@ const VotingCard: React.FC<VotingCardProps> = ({ songs, rankings, onRankingChang
 
           <div className="space-y-2 sm:space-y-3">
             <h3 className="font-semibold text-base sm:text-lg">Rank Your Songs</h3>
-            <div className="space-y-2">
+            <p className="sr-only" aria-live="polite">
+              {announcement}
+            </p>
+            <div className="space-y-2" role="list" aria-label="Ranked list. Drag and drop or use keyboard to reorder.">
               {songs &&
-                rankings.map((songIndex, rankIndex) => (
-                  <SongCard
-                    key={songIndex}
-                    song={songs[songIndex]}
-                    index={songIndex}
-                    isVoting={true}
-                    rank={rankIndex + 1}
-                    onMoveUp={() => handleMoveUp(rankIndex)}
-                    onMoveDown={() => handleMoveDown(rankIndex)}
-                  />
-                ))}
+                rankings.map((songIndex, rankIndex) => {
+                  const isDraggingItem = draggingRankIndex === rankIndex || keyboardDraggingIndex === rankIndex;
+                  const isDropTarget = dragOverRankIndex === rankIndex && draggingRankIndex !== null;
+                  return (
+                    <div
+                      key={songIndex}
+                      role="listitem"
+                      aria-roledescription="Draggable item"
+                      aria-grabbed={isDraggingItem}
+                      aria-describedby={`song-${songIndex}-hint`}
+                      draggable={!isLoading}
+                      onDragStart={() => handleDragStart(rankIndex)}
+                      onDragOver={e => handleDragOverItem(e, rankIndex)}
+                      onDrop={() => handleDropOnItem(rankIndex)}
+                      onDragEnd={handleDragEnd}
+                      onKeyDown={e => handleItemKeyDown(e, rankIndex)}
+                      tabIndex={0}
+                      className={`select-none rounded-xl transition-all duration-200 ease-out ${
+                        isDraggingItem ? "ring-2 ring-primary/60 scale-[0.99]" : ""
+                      } ${isDropTarget ? "ring-2 ring-accent" : ""}`}
+                    >
+                      <div id={`song-${songIndex}-hint`} className="sr-only">
+                        Press Space or Enter to start reordering with keyboard. Use Arrow keys to move. Press Enter to
+                        drop.
+                      </div>
+                      <div className="flex items-stretch gap-2">
+                        <div
+                          className="flex items-center justify-center px-2 cursor-grab active:cursor-grabbing text-base-content/60"
+                          aria-hidden
+                        >
+                          ↕
+                        </div>
+                        <div className="flex-1">
+                          <SongCard song={songs[songIndex]} index={songIndex} isVoting={true} rank={rankIndex + 1} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           </div>
 
