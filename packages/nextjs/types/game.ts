@@ -1,19 +1,19 @@
-// Game-related types for BlockBoom
+// Game-related types for Rank5Game
 
-export interface Song {
+export interface Item {
   title: string;
   author: string;
   url: string;
-  addedBy: string;
-  votes: bigint;
 }
 
 export interface GameStatus {
-  gameExists: boolean;
-  gameActive: boolean;
-  songCount: bigint;
-  totalVotes: bigint;
+  phase: number;
+  itemsCount: number;
+  playersCount: number;
   prizePool: bigint;
+  numItems: number;
+  maxPlayers: number;
+  entryFee: bigint;
 }
 
 export interface LoadingState {

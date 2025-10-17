@@ -1,10 +1,9 @@
 "use client";
 
-import { Address } from "~~/components/scaffold-eth";
-import type { Song } from "~~/types/game";
+import type { Item } from "~~/types/game";
 
 interface SongCardProps {
-  song: Song;
+  song: Item;
   index: number;
   isVoting?: boolean;
   rank?: number;
@@ -29,10 +28,6 @@ const SongCard: React.FC<SongCardProps> = ({ song, isVoting = false, rank, onMov
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-base sm:text-lg truncate">{song.title}</h3>
           <p className="text-xs sm:text-sm text-base-content/70 truncate">{song.author}</p>
-          <div className="flex items-center gap-1 sm:gap-2 mt-1 sm:mt-2">
-            <span className="text-xs text-base-content/50">Added by:</span>
-            <Address address={song.addedBy as `0x${string}`} />
-          </div>
           {song.url && (
             <div className="mt-1 sm:mt-2">
               <a
@@ -50,13 +45,6 @@ const SongCard: React.FC<SongCardProps> = ({ song, isVoting = false, rank, onMov
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-          {!isVoting && (
-            <div className="text-right">
-              <div className="text-lg sm:text-2xl font-bold text-primary">{song.votes.toString()}</div>
-              <div className="text-xs text-base-content/50">votes</div>
-            </div>
-          )}
-
           {isVoting && onMoveUp && onMoveDown && (
             <div className="flex flex-col gap-1">
               <button
@@ -71,7 +59,7 @@ const SongCard: React.FC<SongCardProps> = ({ song, isVoting = false, rank, onMov
               <button
                 className="btn btn-xs btn-circle btn-ghost hover:btn-primary min-h-[32px] min-w-[32px]"
                 onClick={onMoveDown}
-                disabled={rank === 2}
+                disabled={false}
                 aria-label={`Move song down from position ${rank}`}
                 tabIndex={0}
               >

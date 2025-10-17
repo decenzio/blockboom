@@ -9,13 +9,11 @@ interface GameStatusCardsProps {
 
 const GameStatusCards: React.FC<GameStatusCardsProps> = ({ game }) => {
   const getStatusColor = () => {
-    if (!game.gameExists) return "text-base-content/50";
-    return game.gameActive ? "text-success" : "text-error";
+    return game.phase === 0 ? "text-primary" : "text-success";
   };
 
   const getStatusIcon = () => {
-    if (!game.gameExists) return "⚪";
-    return game.gameActive ? "🟢" : "🔴";
+    return game.phase === 0 ? "📝" : "🗳️";
   };
 
   return (
@@ -24,25 +22,30 @@ const GameStatusCards: React.FC<GameStatusCardsProps> = ({ game }) => {
         <div className="stat-figure text-lg sm:text-2xl">{getStatusIcon()}</div>
         <div className="stat-title text-xs font-medium">Game Status</div>
         <div className={`stat-value text-sm sm:text-lg ${getStatusColor()}`}>
-          {game.gameExists ? (game.gameActive ? "Active" : "Ended") : "No Game"}
+          {game.phase === 0 ? "Collecting Items" : "Collecting Ranks"}
         </div>
       </div>
 
       <div className="stat bg-gradient-to-br from-primary/10 to-primary/20 rounded-lg sm:rounded-xl shadow-lg border border-primary/20 p-2 sm:p-4">
         <div className="stat-figure text-lg sm:text-2xl">🎵</div>
-        <div className="stat-title text-xs font-medium">Songs</div>
-        <div className="stat-value text-sm sm:text-lg text-primary">{game.songCount.toString()}/2</div>
+        <div className="stat-title text-xs font-medium">Items</div>
+        <div className="stat-value text-sm sm:text-lg text-primary">
+          {game.itemsCount.toString()}/{game.numItems.toString()}
+        </div>
         <div className="stat-desc">
-          <progress className="progress progress-primary w-full h-1 sm:h-2" value={Number(game.songCount)} max="2" />
+          <progress
+            className="progress progress-primary w-full h-1 sm:h-2"
+            value={Number(game.itemsCount)}
+            max={Number(game.numItems)}
+          />
         </div>
       </div>
 
       <div className="stat bg-gradient-to-br from-accent/10 to-accent/20 rounded-lg sm:rounded-xl shadow-lg border border-accent/20 p-2 sm:p-4">
         <div className="stat-figure text-lg sm:text-2xl">🗳️</div>
-        <div className="stat-title text-xs font-medium">Votes</div>
-        <div className="stat-value text-sm sm:text-lg text-accent">{game.totalVotes.toString()}/2</div>
-        <div className="stat-desc">
-          <progress className="progress progress-accent w-full h-1 sm:h-2" value={Number(game.totalVotes)} max="2" />
+        <div className="stat-title text-xs font-medium">Players</div>
+        <div className="stat-value text-sm sm:text-lg text-accent">
+          {game.playersCount.toString()}/{game.maxPlayers.toString()}
         </div>
       </div>
 

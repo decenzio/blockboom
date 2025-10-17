@@ -2,19 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { NextPage } from "next";
-import { parseEther } from "viem";
+import { formatEther, parseEther } from "viem";
 import { useAccount } from "wagmi";
-import {
-  AddSongCard,
-  CreateGameCard,
-  GameStatusCards,
-  SongsListCard,
-  VotedConfirmationCard,
-  VotingCard,
-  WelcomeModal,
-} from "~~/components/game";
+import { AddSongCard, GameStatusCards, SongsListCard, VotingCard, WelcomeModal } from "~~/components/game";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import type { GameStatus, LoadingState, Song } from "~~/types/game";
+import type { GameStatus, Item, LoadingState } from "~~/types/game";
 
 // Main Component
 const Home: NextPage = () => {
@@ -27,81 +19,117 @@ const Home: NextPage = () => {
     voting: false,
   });
 
-  // Contract reads
-  const { data: gameStatus } = useScaffoldReadContract({
-    contractName: "BlockBoom",
-    functionName: "getGameStatus",
+  // Contract reads - Rank5Game
+  const { data: items } = useScaffoldReadContract({
+    contractName: "Rank5Game",
+    functionName: "getCurrentItems",
   });
 
-  const { data: songs } = useScaffoldReadContract({
-    contractName: "BlockBoom",
-    functionName: "getAllSongs",
+  const { data: phase } = useScaffoldReadContract({
+    contractName: "Rank5Game",
+    functionName: "phase",
   });
 
-  const { data: userVote } = useScaffoldReadContract({
-    contractName: "BlockBoom",
-    functionName: "getUserVote",
+  const { data: itemsCount } = useScaffoldReadContract({
+    contractName: "Rank5Game",
+    functionName: "itemsCount",
+  });
+
+  const { data: players } = useScaffoldReadContract({
+    contractName: "Rank5Game",
+    functionName: "getPlayers",
+  });
+
+  const { data: prizePool } = useScaffoldReadContract({
+    contractName: "Rank5Game",
+    functionName: "getPrizePool",
+  });
+
+  const { data: entryFee } = useScaffoldReadContract({
+    contractName: "Rank5Game",
+    functionName: "ENTRY_FEE",
+  });
+
+  const { data: numItems } = useScaffoldReadContract({
+    contractName: "Rank5Game",
+    functionName: "NUM_ITEMS",
+  });
+
+  const { data: maxPlayers } = useScaffoldReadContract({
+    contractName: "Rank5Game",
+    functionName: "MAX_PLAYERS",
+  });
+
+  const { data: userHasRanked } = useScaffoldReadContract({
+    contractName: "Rank5Game",
+    functionName: "hasRanked",
     args: connectedAddress ? [connectedAddress as `0x${string}`] : [undefined],
   });
 
   // Contract writes
-  const { writeContractAsync: writeBlockBoom } = useScaffoldWriteContract("BlockBoom");
+  const { writeContractAsync: writeRank5 } = useScaffoldWriteContract("Rank5Game");
 
   // Parse game status
-  const game: GameStatus | null = gameStatus
-    ? {
-        gameExists: gameStatus[0],
-        gameActive: gameStatus[1],
-        songCount: gameStatus[2],
-        totalVotes: gameStatus[3],
-        prizePool: gameStatus[4],
-      }
-    : null;
+  const game: GameStatus | null =
+    phase !== undefined &&
+    itemsCount !== undefined &&
+    players !== undefined &&
+    prizePool !== undefined &&
+    numItems !== undefined &&
+    maxPlayers !== undefined &&
+    entryFee !== undefined
+      ? {
+          phase: Number(phase),
+          itemsCount: Number(itemsCount),
+          playersCount: Number((players as readonly string[] | undefined)?.length ?? 0),
+          prizePool: prizePool as bigint,
+          numItems: Number(numItems),
+          maxPlayers: Number(maxPlayers),
+          entryFee: entryFee as bigint,
+        }
+      : null;
 
-  // Initialize song rankings when songs change
+  // Initialize song rankings when items change
   useEffect(() => {
-    if (songs && songs.length > 0) {
-      setSongRankings(Array.from({ length: songs.length }, (_, i) => i));
+    const nonEmptyItems = (items as readonly Item[] | undefined)?.filter(it => it && it.title);
+    if (nonEmptyItems && nonEmptyItems.length > 0) {
+      setSongRankings(Array.from({ length: nonEmptyItems.length }, (_, i) => i));
     }
-  }, [songs]);
+  }, [items]);
 
-  const handleCreateGame = useCallback(async () => {
-    setLoading(prev => ({ ...prev, creatingGame: true }));
-    try {
-      await writeBlockBoom({
-        functionName: "createGame",
-      });
-    } catch (error) {
-      console.error("Error creating game:", error);
-    } finally {
-      setLoading(prev => ({ ...prev, creatingGame: false }));
-    }
-  }, [writeBlockBoom]);
+  // placeholder
 
   const handleAddSong = useCallback(
     async (title: string, author: string, url: string) => {
       setLoading(prev => ({ ...prev, addingSong: true }));
       try {
-        await writeBlockBoom({
-          functionName: "addSong",
-          args: [title, author, url],
+        await writeRank5({
+          functionName: "addItem",
+          args: [{ author, title, url }],
         });
       } catch (error) {
-        console.error("Error adding song:", error);
+        console.error("Error adding item:", error);
       } finally {
         setLoading(prev => ({ ...prev, addingSong: false }));
       }
     },
-    [writeBlockBoom],
+    [writeRank5],
   );
 
   const handleVote = useCallback(
     async (amount: string, rankings: number[]) => {
       setLoading(prev => ({ ...prev, voting: true }));
       try {
-        await writeBlockBoom({
-          functionName: "vote",
-          args: [rankings.map(r => BigInt(r))],
+        const orderTuple = [
+          rankings[0] ?? 0,
+          rankings[1] ?? 1,
+          rankings[2] ?? 2,
+          rankings[3] ?? 3,
+          rankings[4] ?? 4,
+        ] as const;
+        await writeRank5({
+          functionName: "rankItems",
+          args: [orderTuple],
           value: parseEther(amount),
         });
       } catch (error) {
@@ -110,7 +138,7 @@ const Home: NextPage = () => {
         setLoading(prev => ({ ...prev, voting: false }));
       }
     },
-    [writeBlockBoom],
+    [writeRank5],
   );
 
   const handleRankingChange = useCallback((newRankings: number[]) => {
@@ -147,30 +175,29 @@ const Home: NextPage = () => {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Column - Game Actions */}
           <div className="space-y-4 sm:space-y-6">
-            {game && !game.gameExists && (
-              <CreateGameCard onCreateGame={handleCreateGame} isLoading={loading.creatingGame} />
-            )}
-
-            {game && game.gameExists && game.gameActive && game.songCount < 2n && (
+            {game && Number(game.phase) === 0 && game.itemsCount < game.numItems && (
               <AddSongCard onAddSong={handleAddSong} isLoading={loading.addingSong} />
             )}
 
-            {game && game.gameExists && game.gameActive && game.songCount === 2n && !userVote?.hasVoted && songs && (
+            {game && Number(game.phase) === 1 && items && (
               <VotingCard
-                songs={songs as unknown as Song[]}
+                songs={((items as readonly Item[]) || []).filter(it => it && it.title)}
                 rankings={songRankings}
                 onRankingChange={handleRankingChange}
                 onVote={handleVote}
                 isLoading={loading.voting}
+                entryFee={game ? formatEther(game.entryFee) : "0.001"}
               />
             )}
-
-            {userVote?.hasVoted && <VotedConfirmationCard />}
+            {userHasRanked && <div className="alert alert-success">You already ranked this round.</div>}
           </div>
 
-          {/* Right Column - Songs List */}
+          {/* Right Column - Items List */}
           <div className="space-y-4 sm:space-y-6">
-            <SongsListCard songs={(songs as unknown as Song[]) || []} />
+            <SongsListCard
+              songs={((items as readonly Item[]) || []).filter(it => it && it.title)}
+              maxItems={game ? Number(game.numItems) : 5}
+            />
           </div>
         </div>
       </div>

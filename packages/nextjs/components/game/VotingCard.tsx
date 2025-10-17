@@ -3,18 +3,19 @@
 import { useCallback, useMemo, useState } from "react";
 import SongCard from "./SongCard";
 import { EtherInput } from "~~/components/scaffold-eth";
-import type { Song } from "~~/types/game";
+import type { Item } from "~~/types/game";
 
 interface VotingCardProps {
-  songs: Song[];
+  songs: Item[];
   rankings: number[];
   onRankingChange: (rankings: number[]) => void;
   onVote: (amount: string, rankings: number[]) => void;
   isLoading: boolean;
+  entryFee: string;
 }
 
-const VotingCard: React.FC<VotingCardProps> = ({ songs, rankings, onRankingChange, onVote, isLoading }) => {
-  const [voteAmount, setVoteAmount] = useState("0.001");
+const VotingCard: React.FC<VotingCardProps> = ({ songs, rankings, onRankingChange, onVote, isLoading, entryFee }) => {
+  const [voteAmount, setVoteAmount] = useState(entryFee);
   const [draggingRankIndex, setDraggingRankIndex] = useState<number | null>(null);
   const [dragOverRankIndex, setDragOverRankIndex] = useState<number | null>(null);
   const [keyboardDraggingIndex, setKeyboardDraggingIndex] = useState<number | null>(null);
@@ -63,7 +64,7 @@ const VotingCard: React.FC<VotingCardProps> = ({ songs, rankings, onRankingChang
   }, []);
 
   const handleSubmitVote = useCallback(() => {
-    if (voteAmount && parseFloat(voteAmount) >= 0.001) {
+    if (voteAmount) {
       onVote(voteAmount, rankings);
     }
   }, [voteAmount, rankings, onVote]);
@@ -78,7 +79,7 @@ const VotingCard: React.FC<VotingCardProps> = ({ songs, rankings, onRankingChang
     [handleSubmitVote],
   );
 
-  const isDisabled = !voteAmount || parseFloat(voteAmount) < 0.001 || isLoading;
+  const isDisabled = !voteAmount || isLoading;
 
   const handleItemKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>, currentIndex: number) => {
@@ -153,9 +154,9 @@ const VotingCard: React.FC<VotingCardProps> = ({ songs, rankings, onRankingChang
             <label className="label">
               <span className="label-text font-medium text-sm sm:text-base">Bet Amount (ETH)</span>
             </label>
-            <EtherInput value={voteAmount} onChange={setVoteAmount} placeholder="0.001" disabled={isLoading} />
+            <EtherInput value={voteAmount} onChange={setVoteAmount} placeholder={entryFee} disabled={true} />
             <label className="label">
-              <span className="label-text-alt text-xs sm:text-sm text-error">Minimum bet: 0.001 ETH</span>
+              <span className="label-text-alt text-xs sm:text-sm text-error">Fixed fee: {entryFee} ETH</span>
             </label>
           </div>
 
