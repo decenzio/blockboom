@@ -3,13 +3,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { sdk } from "@farcaster/miniapp-sdk";
 import type { NextPage } from "next";
-import { formatEther, parseEther } from "viem";
+import { Log, formatEther, parseEther } from "viem";
 import { useAccount } from "wagmi";
+import { base } from "wagmi/chains";
 import SongsScreen from "~~/components/game/SongsScreen";
 import TransactionSuccessOverlay from "~~/components/game/TransactionSuccessOverlay";
 import VotedConfirmationCard from "~~/components/game/VotedConfirmationCard";
 import VotingScreen from "~~/components/game/VotingScreen";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import {
+  useScaffoldReadContract,
+  useScaffoldWatchContractEvent,
+  useScaffoldWriteContract,
+} from "~~/hooks/scaffold-eth";
 import type { GameStatus, Item, LoadingState } from "~~/types/game";
 
 // Step navigation
@@ -28,6 +33,12 @@ const Home: NextPage = () => {
   const [showAddShare, setShowAddShare] = useState(false);
   const [showVoteShare, setShowVoteShare] = useState(false);
   const [shouldRedirectToVoting, setShouldRedirectToVoting] = useState(false);
+  const [userHasRanked, setUserHasRanked] = useState(false);
+  const [itemAdded, setItemAdded] = useState<Log[]>([]);
+
+  useEffect(() => {
+    console.log(itemAdded);
+  }, [itemAdded]);
 
   // Contract reads - Rankr
   const { data: items } = useScaffoldReadContract({
@@ -70,14 +81,27 @@ const Home: NextPage = () => {
     functionName: "MAX_PLAYERS",
   });
 
-  const { data: userHasRanked } = useScaffoldReadContract({
-    contractName: "Rankr",
-    functionName: "hasRanked",
-    args: connectedAddress ? [connectedAddress as `0x${string}`] : [undefined],
-  });
+  // const { data: userHasRanked } = useScaffoldReadContract({
+  //   contractName: "Rankr",
+  //   functionName: "hasRanked",
+  //   args: connectedAddress ? [connectedAddress as `0x${string}`] : [undefined],
+  // });
 
   // Contract writes
   const { writeContractAsync: writeRankr } = useScaffoldWriteContract("Rankr");
+
+  // Event reads
+  useScaffoldWatchContractEvent({
+    contractName: "Rankr",
+    eventName: "ItemAdded",
+    chainId: base.id,
+    onLogs: logs => {
+      setItemAdded(logs);
+      console.log(itemAdded);
+    },
+  });
+
+  // convert itemAdded to text
 
   // Parse game status
   const game: GameStatus | null = useMemo(() => {
@@ -177,6 +201,7 @@ const Home: NextPage = () => {
           value: parseEther(amount),
         });
         setShowVoteShare(true);
+        setUserHasRanked(true);
       } catch (error) {
         console.error("Error voting:", error);
       } finally {
@@ -198,7 +223,7 @@ const Home: NextPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <div className="text-6xl sm:text-8xl mb-4 sm:mb-6">🎵</div>
-          <h1 className="text-3xl sm:text-5xl font-bold text-primary mb-3 sm:mb-4">BlockBoom</h1>
+          <h1 className="text-3xl sm:text-5xl font-bold text-primary mb-3 sm:mb-4">RANKr</h1>
           <p className="text-lg sm:text-xl text-base-content/70 mb-6 sm:mb-8">
             Please connect your wallet to start playing!
           </p>
@@ -282,7 +307,7 @@ const Home: NextPage = () => {
         <div className="text-center py-12">
           <div className="text-4xl mb-4">⏳</div>
           <h2 className="text-xl font-semibold mb-2">Waiting for Voting Phase</h2>
-          <p className="text-base-content/70">The voting phase will begin automatically when all songs are added.</p>
+          <p className="text-base-content/70">add event here</p>
         </div>
       )}
     </div>
