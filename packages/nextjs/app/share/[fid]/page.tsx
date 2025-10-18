@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ fid: stri
   const imageUrl = `${APP_URL}/api/opengraph-image?fid=${fid}`;
 
   return {
-    title: `${APP_NAME} - Share`,
+    title: `${APP_NAME} - Rank Your Songs!`,
     openGraph: {
       title: APP_NAME,
       description: APP_DESCRIPTION,

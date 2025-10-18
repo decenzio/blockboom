@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { sdk } from "@farcaster/miniapp-sdk";
 import type { NextPage } from "next";
 import { formatEther, parseEther } from "viem";
 import { useAccount } from "wagmi";
@@ -184,6 +185,11 @@ const Home: NextPage = () => {
     },
     [writeRank5],
   );
+
+  // After your app is fully loaded and ready to display
+  useEffect(() => {
+    sdk.actions.ready();
+  }, []);
 
   // All hooks above this point; render based on connection state below
 

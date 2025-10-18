@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import sdk from "@farcaster/miniapp-sdk";
 import { buildShareUrl } from "~~/lib/share";
 
 type ShareIntent = {
@@ -27,21 +28,10 @@ const ShareButton: React.FC<ShareButtonProps> = ({ label = "Share", className = 
   const handleShare = useCallback(async () => {
     try {
       setIsSharing(true);
-      const text = intent.text;
-      const url = targetEmbed;
-
-      // Prefer Web Share API if available (nice UX on mobile)
-      if (typeof window !== "undefined" && (navigator as any).share) {
-        await (navigator as any).share({ text, url });
-        return;
-      }
-
-      // Fallback: open Warpcast composer with prefilled text
-      const params = new URLSearchParams();
-      params.set("text", text);
-      if (url) params.set("embeds[]", url);
-      const warpUrl = `https://warpcast.com/~/compose?${params.toString()}`;
-      window.open(warpUrl, "_blank", "noopener,noreferrer");
+      await sdk.actions.composeCast({
+        text: "Rank these songs! 🚀",
+        embeds: [`https://blockboom-nextjs.vercel.app/share/dummy_fid`],
+      });
     } catch (err) {
       console.error("Share failed", err);
     } finally {
