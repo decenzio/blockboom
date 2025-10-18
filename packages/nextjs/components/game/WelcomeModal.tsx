@@ -31,7 +31,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         <div className="text-center mb-4 sm:mb-6">
           <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🎵</div>
           <h2 id="welcome-title" className="text-2xl sm:text-3xl font-bold text-primary mb-2">
-            Welcome to BlockBoom!
+            Welcome to RANKr!
           </h2>
           <p className="text-sm sm:text-base text-base-content/70">The ultimate decentralized music voting game</p>
         </div>

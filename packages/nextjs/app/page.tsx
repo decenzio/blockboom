@@ -222,18 +222,21 @@ const Home: NextPage = () => {
           <div className="bg-primary/10 p-3 sm:p-4 rounded-lg">
             <h3 className="font-semibold text-primary mb-2 text-sm sm:text-base">🎮 How to Play</h3>
             <ol className="space-y-1 text-left text-sm">
-              <li>1. Add your favorite songs (max {game?.numItems ?? 5})</li>
-              <li>2. When full, rank all songs</li>
-              <li>3. Place your ETH bet</li>
-              <li>4. Winner takes the prize pool</li>
+              <li>1. Players submit their 3 favorite songs 📌</li>
+              <li>2. Players rank the 3 songs 🥇🥈🥉</li>
+              <li>3. Winner takes the prize pool! 💰</li>
             </ol>
           </div>
           <div className="bg-accent/10 p-3 sm:p-4 rounded-lg">
             <h3 className="font-semibold text-accent mb-2 text-sm sm:text-base">📋 Rules</h3>
             <ul className="space-y-1 text-left text-sm">
               <li>• Entry fee: {game ? formatEther(game.entryFee) : "0.001"} ETH</li>
-              <li>• Game ends when enough people voted</li>
-              <li>• Each vote costs gas</li>
+              <li>• Rankings are encrypted and stored privately on-chain</li>
+              <li>• Game ends when the threshold # of players have voted</li>
+              <li>• The song of the day is the one with the highest cumulative ranking</li>
+              <li>
+                • The prize pool is split equally among the players who gave a #1 ranking to the song of the day 💸
+              </li>
             </ul>
           </div>
         </div>

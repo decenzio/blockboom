@@ -54,13 +54,6 @@ const TransactionSuccessOverlay: React.FC<TransactionSuccessOverlayProps> = ({
               <h2 className="text-2xl font-bold text-success mb-2">Transaction Successful!</h2>
               <p className="text-base-content/70">Your transaction has been confirmed on the blockchain.</p>
             </div>
-            <button
-              className="btn btn-sm btn-circle btn-ghost text-base-content/60 hover:text-base-content ml-4"
-              onClick={handleClose}
-              aria-label="Close dialog"
-            >
-              ✕
-            </button>
           </div>
 
           {/* Share Button */}
