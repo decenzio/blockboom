@@ -1,0 +1,6 @@
+<svg width="400" height="225" viewBox="0 0 400 225" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="225" fill="#1f2937"/>
+  <circle cx="200" cy="112.5" r="30" fill="#6b7280"/>
+  <path d="M185 100L185 125L205 112.5L185 100Z" fill="white"/>
+  <text x="200" y="160" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="14">Music Thumbnail</text>
+</svg>

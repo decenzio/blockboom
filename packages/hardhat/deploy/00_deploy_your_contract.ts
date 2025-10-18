@@ -21,23 +21,22 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  // Deploy RankGame
-  const rankGameDeployment = await deploy("RankGame", {
+  const rankrDeployment = await deploy("Rankr", {
     from: deployer,
     args: [],
     log: true,
     autoMine: true,
   });
 
-  const rankGame = await hre.ethers.getContract<Contract>("RankGame", deployer);
-  console.log("🏆 RankGame deployed!", rankGameDeployment.address);
-  console.log("🔢 NUM_ITEMS:", await rankGame.NUM_ITEMS());
-  console.log("👥 MAX_PLAYERS:", await rankGame.MAX_PLAYERS());
-  console.log("💸 ENTRY_FEE:", await rankGame.ENTRY_FEE());
+  const rankr = await hre.ethers.getContract<Contract>("Rankr", deployer);
+  console.log("🏆 Rankr deployed!", rankrDeployment.address);
+  console.log("🔢 NUM_ITEMS:", await rankr.NUM_ITEMS());
+  console.log("👥 MAX_PLAYERS:", await rankr.MAX_PLAYERS());
+  console.log("💸 ENTRY_FEE:", await rankr.ENTRY_FEE());
 };
 
 export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
-// e.g. yarn deploy --tags RankGame
-deployYourContract.tags = ["RankGame"];
+// e.g. yarn deploy --tags Rank5Game
+deployYourContract.tags = ["Rankr"];

@@ -16,7 +16,7 @@ export async function GET() {
           </div>
         )} */}
         <h1 tw="text-8xl text-white">THE RANKR APP!</h1>
-        <p tw="text-5xl mt-4 text-white opacity-80">(by Romi, Noad & Diana)</p>
+        <p tw="text-5xl mt-4 text-white opacity-80">(by Romi & Noad)</p>
       </div>
     ),
     {

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { buildShareUrl } from "~~/lib/share";
+import { useCallback, useState } from "react";
+import sdk from "@farcaster/miniapp-sdk";
 
 type ShareIntent = {
   text: string;
@@ -12,42 +12,32 @@ type ShareIntent = {
 interface ShareButtonProps {
   label?: string;
   className?: string;
-  intent: ShareIntent;
+  intent?: ShareIntent;
 }
 
 const ShareButton: React.FC<ShareButtonProps> = ({ label = "Share", className = "", intent }) => {
   const [isSharing, setIsSharing] = useState(false);
 
-  const targetEmbed = useMemo(() => {
-    if (intent.embedUrl) return intent.embedUrl;
-    if (intent.embedPath) return buildShareUrl(intent.embedPath);
-    return undefined;
-  }, [intent.embedPath, intent.embedUrl]);
+  // const targetEmbed = useMemo(() => {
+  //   if (intent.embedUrl) return intent.embedUrl;
+  //   if (intent.embedPath) return buildShareUrl(intent.embedPath);
+  //   return undefined;
+  // }, [intent.embedPath, intent.embedUrl]);
 
   const handleShare = useCallback(async () => {
     try {
       setIsSharing(true);
-      const text = intent.text;
-      const url = targetEmbed;
-
-      // Prefer Web Share API if available (nice UX on mobile)
-      if (typeof window !== "undefined" && (navigator as any).share) {
-        await (navigator as any).share({ text, url });
-        return;
-      }
-
-      // Fallback: open Warpcast composer with prefilled text
-      const params = new URLSearchParams();
-      params.set("text", text);
-      if (url) params.set("embeds[]", url);
-      const warpUrl = `https://warpcast.com/~/compose?${params.toString()}`;
-      window.open(warpUrl, "_blank", "noopener,noreferrer");
+      const shareText = intent?.text || "Rank these songs! 🚀";
+      await sdk.actions.composeCast({
+        text: shareText,
+        embeds: [`https://blockboom-nextjs.vercel.app/share/dummy_fid`],
+      });
     } catch (err) {
       console.error("Share failed", err);
     } finally {
       setIsSharing(false);
     }
-  }, [intent.text, targetEmbed]);
+  }, [intent?.text]);
 
   return (
     <button
