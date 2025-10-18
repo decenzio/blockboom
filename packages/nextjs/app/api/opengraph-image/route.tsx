@@ -1,12 +1,11 @@
 import { ImageResponse } from "next/og";
-import { NextRequest } from "next/server";
+
 // import { getNeynarUser } from "~/lib/neynar";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-
-    // const user = fid ? await getNeynarUser(Number(fid)) : null;
+  // const user = fid ? await getNeynarUser(Number(fid)) : null;
 
   return new ImageResponse(
     (
@@ -23,6 +22,6 @@ export async function GET() {
     {
       width: 1200,
       height: 800,
-    }
+    },
   );
 }

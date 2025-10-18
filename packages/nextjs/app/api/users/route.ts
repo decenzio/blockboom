@@ -4,7 +4,7 @@
 //   const apiKey = process.env.NEYNAR_API_KEY;
 //   const { searchParams } = new URL(request.url);
 //   const fids = searchParams.get('fids');
-  
+
 //   if (!apiKey) {
 //     return NextResponse.json(
 //       { error: 'Neynar API key is not configured. Please add NEYNAR_API_KEY to your environment variables.' },
@@ -21,7 +21,7 @@
 
 //   try {
 //     const fidsArray = fids.split(',').map(fid => parseInt(fid.trim()));
-    
+
 //     const { users } = await neynar.fetchBulkUsers({
 //       fids: fidsArray,
 //     });
