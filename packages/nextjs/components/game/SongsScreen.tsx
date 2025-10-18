@@ -54,11 +54,7 @@ const SongsScreen: React.FC<SongsScreenProps> = ({ songs, maxItems, onAddSong, i
       {/* Title */}
       <div className="text-center">
         <h1 className="text-3xl sm:text-4xl font-bold text-primary mb-2">Top 5 RANKr</h1>
-        <p className="text-base-content/70">
-          {songs.length < maxItems
-            ? `Add songs to fill all ${maxItems} slots (${songs.length}/${maxItems})`
-            : "All songs added! Ready for voting."}
-        </p>
+        <p className="text-base-content/70">Submit a song to be ranked!</p>
       </div>
 
       {/* Tiles Grid */}
@@ -78,9 +74,7 @@ const SongsScreen: React.FC<SongsScreenProps> = ({ songs, maxItems, onAddSong, i
       {/* Status Message */}
       {songs.length < maxItems && (
         <div className="text-center">
-          <p className="text-sm text-base-content/60">
-            Tap the + tiles to add songs. Once all {maxItems} slots are filled, voting will begin!
-          </p>
+          <p className="text-sm text-base-content/60">Once all slots are filled, voting will begin!</p>
         </div>
       )}
 

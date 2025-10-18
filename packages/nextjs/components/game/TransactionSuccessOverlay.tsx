@@ -54,16 +54,6 @@ const TransactionSuccessOverlay: React.FC<TransactionSuccessOverlayProps> = ({
           <div className="mb-6">
             <ActionShareCard title={title} description={description} actionText={actionText} embedPath={embedPath} />
           </div>
-
-          {/* Close Button */}
-          <button
-            className="btn btn-primary w-full"
-            onClick={handleClose}
-            tabIndex={0}
-            aria-label="Close success message"
-          >
-            Continue
-          </button>
         </div>
       </div>
     </div>
