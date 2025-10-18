@@ -4,9 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { NextPage } from "next";
 import { formatEther, parseEther } from "viem";
 import { useAccount } from "wagmi";
-import { AddSongCard, GameStatusCards, SongsListCard, VotingCard } from "~~/components/game";
+import SongsScreen from "~~/components/game/SongsScreen";
+import TransactionSuccessOverlay from "~~/components/game/TransactionSuccessOverlay";
 import VotedConfirmationCard from "~~/components/game/VotedConfirmationCard";
-import ActionShareCard from "~~/components/ui/ActionShareCard";
+import VotingScreen from "~~/components/game/VotingScreen";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import type { GameStatus, Item, LoadingState } from "~~/types/game";
 
@@ -25,6 +26,7 @@ const Home: NextPage = () => {
   });
   const [showAddShare, setShowAddShare] = useState(false);
   const [showVoteShare, setShowVoteShare] = useState(false);
+  const [shouldRedirectToVoting, setShouldRedirectToVoting] = useState(false);
 
   // Contract reads - Rank5Game
   const { data: items } = useScaffoldReadContract({
@@ -104,9 +106,27 @@ const Home: NextPage = () => {
   useEffect(() => {
     const nonEmptyItems = (items as readonly Item[] | undefined)?.filter(it => it && it.title);
     if (nonEmptyItems && nonEmptyItems.length > 0) {
-      setSongRankings(Array.from({ length: nonEmptyItems.length }, (_, i) => i));
+      // Only auto-populate rankings if we're not on the voting screen
+      // This allows the voting screen to start with empty rankings
+      if (activeStep !== "voting") {
+        setSongRankings(Array.from({ length: nonEmptyItems.length }, (_, i) => i));
+      }
     }
-  }, [items]);
+  }, [items, activeStep]);
+
+  // Clear rankings when entering voting screen to start fresh
+  useEffect(() => {
+    if (activeStep === "voting") {
+      setSongRankings([]);
+    }
+  }, [activeStep]);
+
+  // Automatically switch to voting screen when phase changes to 1
+  useEffect(() => {
+    if (game && Number(game.phase) === 1 && activeStep === "songs") {
+      setActiveStep("voting");
+    }
+  }, [game, activeStep]);
 
   // Keep users on the welcome screen until they choose to proceed
 
@@ -118,6 +138,15 @@ const Home: NextPage = () => {
           functionName: "addItem",
           args: [{ author, title, url }],
         });
+
+        // Check if this was the final song (current count + 1 equals max items)
+        const currentCount = (items as readonly Item[] | undefined)?.filter(it => it && it.title).length ?? 0;
+        const maxItems = game ? Number(game.numItems) : 5;
+
+        if (currentCount + 1 >= maxItems) {
+          setShouldRedirectToVoting(true);
+        }
+
         setShowAddShare(true);
       } catch (error) {
         console.error("Error adding item:", error);
@@ -125,8 +154,16 @@ const Home: NextPage = () => {
         setLoading(prev => ({ ...prev, addingSong: false }));
       }
     },
-    [writeRank5],
+    [writeRank5, items, game],
   );
+
+  const handleCloseAddShare = useCallback(() => {
+    setShowAddShare(false);
+    if (shouldRedirectToVoting) {
+      setShouldRedirectToVoting(false);
+      setActiveStep("voting");
+    }
+  }, [shouldRedirectToVoting]);
 
   const handleVote = useCallback(
     async (amount: string, rankings: number[]) => {
@@ -150,12 +187,6 @@ const Home: NextPage = () => {
 
   // All hooks above this point; render based on connection state below
 
-  const canNavigateToVoting = useMemo(() => {
-    if (!game) return false;
-    const hasItems = !!(items as readonly Item[] | undefined)?.length;
-    return Number(game.phase) === 1 && hasItems;
-  }, [game, items]);
-
   if (!connectedAddress) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200 flex items-center justify-center p-4">
@@ -172,44 +203,6 @@ const Home: NextPage = () => {
       </div>
     );
   }
-
-  const Stepper = (
-    <div className="w-full mb-4 sm:mb-6">
-      <div className="flex items-center justify-center gap-2 sm:gap-4">
-        <button
-          className={`btn btn-sm ${activeStep === "welcome" ? "btn-primary" : "btn-outline"}`}
-          onClick={() => setActiveStep("welcome")}
-          aria-label="Go to Welcome"
-        >
-          1. Welcome
-        </button>
-        <div className="opacity-50">→</div>
-        <button
-          className={`btn btn-sm ${activeStep === "songs" ? "btn-primary" : "btn-outline"}`}
-          onClick={() => setActiveStep("songs")}
-          aria-label="Go to Songs"
-        >
-          2. Songs
-        </button>
-        <div className="opacity-50">→</div>
-        <button
-          className={`btn btn-sm ${activeStep === "voting" ? "btn-primary" : "btn-outline"}`}
-          onClick={() => canNavigateToVoting && setActiveStep("voting")}
-          aria-disabled={!canNavigateToVoting}
-        >
-          3. Vote
-        </button>
-      </div>
-      <p className="text-center text-xs sm:text-sm mt-2 text-base-content/60">
-        {activeStep === "welcome" && "Review how it works, then continue."}
-        {activeStep === "songs" &&
-          (Number(game?.phase) === 0
-            ? "Add songs or wait until the list is full."
-            : "Song list is ready! Proceed to voting.")}
-        {activeStep === "voting" && "Rank songs and place your bet."}
-      </p>
-    </div>
-  );
 
   const WelcomeScreen = (
     <div className="space-y-4 sm:space-y-6">
@@ -249,42 +242,22 @@ const Home: NextPage = () => {
     </div>
   );
 
-  const SongsScreen = (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-      <div className="space-y-4 sm:space-y-6">
-        {game && Number(game.phase) === 0 && game.itemsCount < game.numItems && (
-          <AddSongCard onAddSong={handleAddSong} isLoading={loading.addingSong} />
-        )}
-        {showAddShare && (
-          <ActionShareCard
-            title="I just added a song to BlockBoom!"
-            description="Join our game and add yours before voting starts."
-            actionText="Share with friends"
-            embedPath="/"
-          />
-        )}
-      </div>
-      <div className="space-y-4 sm:space-y-6">
-        <SongsListCard
-          songs={((items as readonly Item[]) || []).filter(it => it && it.title)}
-          maxItems={game ? Number(game.numItems) : 5}
-        />
-        <button
-          className="btn btn-secondary w-full"
-          onClick={() => setActiveStep("voting")}
-          disabled={!canNavigateToVoting}
-        >
-          {canNavigateToVoting ? "Proceed to Voting" : "Waiting for ranking phase"}
-        </button>
-      </div>
+  const SongsScreenContent = (
+    <div className="space-y-6">
+      <SongsScreen
+        songs={((items as readonly Item[]) || []).filter(it => it && it.title)}
+        maxItems={game ? Number(game.numItems) : 5}
+        onAddSong={handleAddSong}
+        isLoading={loading.addingSong}
+      />
     </div>
   );
 
-  const VotingScreen = (
-    <div className="grid grid-cols-1 gap-4 sm:gap-6">
+  const VotingScreenContent = (
+    <div className="space-y-6">
       {game && Number(game.phase) === 1 && items && (
         <>
-          <VotingCard
+          <VotingScreen
             songs={((items as readonly Item[]) || []).filter(it => it && it.title)}
             rankings={songRankings}
             onRankingChange={newRanks => setSongRankings(newRanks)}
@@ -292,16 +265,16 @@ const Home: NextPage = () => {
             isLoading={loading.voting}
             entryFee={game ? formatEther(game.entryFee) : "0.001"}
           />
+
           {userHasRanked && <VotedConfirmationCard />}
-          {showVoteShare && (
-            <ActionShareCard
-              title="I just voted on my top tracks!"
-              description="Come rank songs and place your bet on BlockBoom."
-              actionText="Share my vote"
-              embedPath="/"
-            />
-          )}
         </>
+      )}
+      {game && Number(game.phase) !== 1 && (
+        <div className="text-center py-12">
+          <div className="text-4xl mb-4">⏳</div>
+          <h2 className="text-xl font-semibold mb-2">Waiting for Voting Phase</h2>
+          <p className="text-base-content/70">The voting phase will begin automatically when all songs are added.</p>
+        </div>
       )}
     </div>
   );
@@ -309,15 +282,30 @@ const Home: NextPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-base-100 to-base-200">
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
-        {/* Game Status */}
-        {game && <GameStatusCards game={game} />}
-        {Stepper}
-
         {/* Screens */}
         {activeStep === "welcome" && WelcomeScreen}
-        {activeStep === "songs" && SongsScreen}
-        {activeStep === "voting" && VotingScreen}
+        {activeStep === "songs" && SongsScreenContent}
+        {activeStep === "voting" && VotingScreenContent}
       </div>
+
+      {/* Transaction Success Overlays */}
+      <TransactionSuccessOverlay
+        isOpen={showAddShare}
+        onClose={handleCloseAddShare}
+        title="I just added a song to BlockBoom!"
+        description="Join our game and add yours before voting starts."
+        actionText="Share with friends"
+        embedPath="/"
+      />
+
+      <TransactionSuccessOverlay
+        isOpen={showVoteShare}
+        onClose={() => setShowVoteShare(false)}
+        title="I just voted on my top tracks!"
+        description="Come rank songs and place your bet on BlockBoom."
+        actionText="Share my vote"
+        embedPath="/"
+      />
     </div>
   );
 };
