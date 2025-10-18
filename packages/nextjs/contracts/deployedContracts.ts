@@ -5,10 +5,100 @@
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
-  8453: {
+  11155111: {
     Rank5Game: {
-      address: "0x7c114169ADeD5298791199d37633001c7dB941D4",
+      address: "0x323CFF611A10443E79b7D97689d073e631daacB7",
       abi: [
+        {
+          inputs: [],
+          name: "AlreadyRanked",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint8",
+              name: "index",
+              type: "uint8",
+            },
+          ],
+          name: "DuplicateIndex",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint8",
+              name: "index",
+              type: "uint8",
+            },
+          ],
+          name: "IndexOutOfRange",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidItem",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "ItemsFull",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NoDirectETH",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "PayoutFailed",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "Reentrancy",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "provided",
+              type: "uint256",
+            },
+          ],
+          name: "WrongEntryFee",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "enum Rank5Game.Phase",
+              name: "expected",
+              type: "uint8",
+            },
+            {
+              internalType: "enum Rank5Game.Phase",
+              name: "current",
+              type: "uint8",
+            },
+          ],
+          name: "WrongPhase",
+          type: "error",
+        },
         {
           anonymous: false,
           inputs: [
@@ -95,6 +185,10 @@ const deployedContracts = {
           inputs: [],
           name: "RoundReset",
           type: "event",
+        },
+        {
+          stateMutability: "payable",
+          type: "fallback",
         },
         {
           inputs: [],
@@ -366,371 +460,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 36976560,
-    },
-  },
-  31337: {
-    Rank5Game: {
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      abi: [
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "uint8",
-              name: "index",
-              type: "uint8",
-            },
-            {
-              indexed: true,
-              internalType: "address",
-              name: "adder",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "addedAt",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "string",
-              name: "author",
-              type: "string",
-            },
-            {
-              indexed: false,
-              internalType: "string",
-              name: "title",
-              type: "string",
-            },
-            {
-              indexed: false,
-              internalType: "string",
-              name: "url",
-              type: "string",
-            },
-          ],
-          name: "ItemAdded",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "player",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint8[3]",
-              name: "order",
-              type: "uint8[3]",
-            },
-          ],
-          name: "RankingSubmitted",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: false,
-              internalType: "address[]",
-              name: "winners",
-              type: "address[]",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "rewardPerWinner",
-              type: "uint256",
-            },
-          ],
-          name: "RoundCompleted",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [],
-          name: "RoundReset",
-          type: "event",
-        },
-        {
-          inputs: [],
-          name: "ENTRY_FEE",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "MAX_PLAYERS",
-          outputs: [
-            {
-              internalType: "uint8",
-              name: "",
-              type: "uint8",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "NUM_ITEMS",
-          outputs: [
-            {
-              internalType: "uint8",
-              name: "",
-              type: "uint8",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              components: [
-                {
-                  internalType: "string",
-                  name: "author",
-                  type: "string",
-                },
-                {
-                  internalType: "string",
-                  name: "title",
-                  type: "string",
-                },
-                {
-                  internalType: "string",
-                  name: "url",
-                  type: "string",
-                },
-              ],
-              internalType: "struct Rank5Game.ItemInput",
-              name: "item",
-              type: "tuple",
-            },
-          ],
-          name: "addItem",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getCurrentItems",
-          outputs: [
-            {
-              components: [
-                {
-                  internalType: "string",
-                  name: "author",
-                  type: "string",
-                },
-                {
-                  internalType: "string",
-                  name: "title",
-                  type: "string",
-                },
-                {
-                  internalType: "string",
-                  name: "url",
-                  type: "string",
-                },
-                {
-                  internalType: "address",
-                  name: "adder",
-                  type: "address",
-                },
-                {
-                  internalType: "uint256",
-                  name: "addedAt",
-                  type: "uint256",
-                },
-              ],
-              internalType: "struct Rank5Game.Item[3]",
-              name: "",
-              type: "tuple[3]",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getPlayers",
-          outputs: [
-            {
-              internalType: "address[]",
-              name: "",
-              type: "address[]",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "getPrizePool",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          name: "hasRanked",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          name: "items",
-          outputs: [
-            {
-              internalType: "string",
-              name: "author",
-              type: "string",
-            },
-            {
-              internalType: "string",
-              name: "title",
-              type: "string",
-            },
-            {
-              internalType: "string",
-              name: "url",
-              type: "string",
-            },
-            {
-              internalType: "address",
-              name: "adder",
-              type: "address",
-            },
-            {
-              internalType: "uint256",
-              name: "addedAt",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "itemsCount",
-          outputs: [
-            {
-              internalType: "uint8",
-              name: "",
-              type: "uint8",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "phase",
-          outputs: [
-            {
-              internalType: "enum Rank5Game.Phase",
-              name: "",
-              type: "uint8",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          name: "players",
-          outputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "prizePool",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "uint8[3]",
-              name: "order",
-              type: "uint8[3]",
-            },
-          ],
-          name: "rankItems",
-          outputs: [],
-          stateMutability: "payable",
-          type: "function",
-        },
-        {
-          stateMutability: "payable",
-          type: "receive",
-        },
-      ],
-      inheritedFunctions: {},
-      deployedOnBlock: 1,
+      deployedOnBlock: 9437922,
     },
   },
 } as const;
