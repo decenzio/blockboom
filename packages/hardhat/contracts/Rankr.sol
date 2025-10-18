@@ -11,10 +11,10 @@ pragma solidity ^0.8.25;
  *           4) Reset state for the next round
  * @dev Functionality preserved; refactored with custom errors, modifiers, NatSpec and reentrancy guard.
  */
-contract Rank5Game {
-    uint256 public constant ENTRY_FEE = 1e15; // 0.001 ETH
+contract Rankr {
+    uint256 public constant ENTRY_FEE = 1e13; // 0.0001 ETH
     uint8   public constant NUM_ITEMS = 3;
-    uint8   public constant MAX_PLAYERS = 2;
+    uint8   public constant MAX_PLAYERS = 8;
 
     enum Phase { CollectingItems, CollectingRanks }
     Phase public phase = Phase.CollectingItems;
@@ -50,7 +50,6 @@ contract Rank5Game {
 
     address[] public players;
     mapping(address => uint8[NUM_ITEMS]) private rankings;
-    mapping(address => bool) public hasRanked;
 
     uint256 public prizePool;
 
@@ -96,11 +95,9 @@ contract Rank5Game {
     /// @param order A permutation of [0..NUM_ITEMS-1] from best to worst.
     function rankItems(uint8[NUM_ITEMS] calldata order) external payable inPhase(Phase.CollectingRanks) nonReentrant {
         if (msg.value != ENTRY_FEE) revert WrongEntryFee(msg.value);
-        if (hasRanked[msg.sender]) revert AlreadyRanked();
         _validatePermutation(order);
 
         players.push(msg.sender);
-        hasRanked[msg.sender] = true;
         rankings[msg.sender] = order;
         prizePool += msg.value;
 
@@ -204,7 +201,6 @@ contract Rank5Game {
         itemsCount = 0;
 
         for (uint8 i = 0; i < players.length; i++) {
-            delete hasRanked[players[i]];
             delete rankings[players[i]];
         }
         delete players;
