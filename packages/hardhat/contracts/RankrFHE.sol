@@ -69,13 +69,16 @@ contract RankrFHE is SepoliaConfig {
         if (!_isValidItemInput(item)) revert InvalidItem();
         if (_isDuplicateItem(item)) revert DuplicateItem();
 
+        euint32 initialVotes = FHE.asEuint32(0);
+        FHE.allowThis(initialVotes);
+        
         items[itemsCount] = Item({
             author: item.author,
             title: item.title,
             url: item.url,
             adder: msg.sender,
             addedAt: block.timestamp,
-            votes: FHE.asEuint32(0)
+            votes: initialVotes
         });
 
         emit ItemAdded(itemsCount, msg.sender, block.timestamp, item.author, item.title, item.url);
@@ -100,11 +103,13 @@ contract RankrFHE is SepoliaConfig {
 
         for (uint8 i = 0; i < itemsCount; i++) {
             euint32 encryptedI = FHE.asEuint32(i);
+            FHE.allowThis(encryptedI);
             ebool isEqual = FHE.eq(encryptedItemId, encryptedI);
             // Add 1 vote to this item if it matches (using conditional selection)
             euint32 voteIncrement = FHE.select(isEqual, FHE.asEuint32(1), FHE.asEuint32(0));
+            FHE.allowThis(voteIncrement);
             items[i].votes = FHE.add(items[i].votes, voteIncrement);
-            FHE.allow(items[i].votes, msg.sender);
+            FHE.allowThis(items[i].votes);
         }
 
         hasVoted[msg.sender] = true;

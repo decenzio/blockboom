@@ -63,7 +63,7 @@
     "@fhevm/hardhat-plugin": "^0.1.0",
     "@fhevm/mock-utils": "0.1.0",
     "@fhevm/solidity": "^0.8.0",
-    "@nomicfoundation/hardhat-ethers": "^4.0.2",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@zama-fhe/oracle-solidity": "^0.2.0",
     "@zama-fhe/relayer-sdk": "^0.2.0"
   }
