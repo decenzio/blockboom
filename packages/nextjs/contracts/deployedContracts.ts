@@ -462,6 +462,404 @@ const deployedContracts = {
       inheritedFunctions: {},
       deployedOnBlock: 1,
     },
+    RankGameFHE: {
+      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      abi: [
+        {
+          inputs: [],
+          name: "AlreadyVoted",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "DuplicateItem",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidItem",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidItemId",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "InvalidSender",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "ItemsFull",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NoDirectETH",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NoETHSent",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "Reentrancy",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "enum RankGameFHE.Phase",
+              name: "expected",
+              type: "uint8",
+            },
+            {
+              internalType: "enum RankGameFHE.Phase",
+              name: "current",
+              type: "uint8",
+            },
+          ],
+          name: "WrongPhase",
+          type: "error",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "itemId",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "adder",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "author",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "title",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "url",
+              type: "string",
+            },
+          ],
+          name: "ItemAdded",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: false,
+              internalType: "uint8[]",
+              name: "winnerIds",
+              type: "uint8[]",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "prizePerWinner",
+              type: "uint256",
+            },
+          ],
+          name: "RoundFinalized",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "voter",
+              type: "address",
+            },
+          ],
+          name: "Voted",
+          type: "event",
+        },
+        {
+          stateMutability: "payable",
+          type: "fallback",
+        },
+        {
+          inputs: [],
+          name: "MAX_ITEMS",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "MAX_PLAYERS",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "MAX_VOTES",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              components: [
+                {
+                  internalType: "string",
+                  name: "author",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "title",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "url",
+                  type: "string",
+                },
+              ],
+              internalType: "struct RankGameFHE.ItemInput",
+              name: "item",
+              type: "tuple",
+            },
+          ],
+          name: "addItem",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "canFinalize",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          name: "hasVoted",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "items",
+          outputs: [
+            {
+              internalType: "string",
+              name: "author",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "title",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "url",
+              type: "string",
+            },
+            {
+              internalType: "address",
+              name: "adder",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "addedAt",
+              type: "uint256",
+            },
+            {
+              internalType: "euint32",
+              name: "votes",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "itemsCount",
+          outputs: [
+            {
+              internalType: "uint8",
+              name: "",
+              type: "uint8",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "phase",
+          outputs: [
+            {
+              internalType: "enum RankGameFHE.Phase",
+              name: "",
+              type: "uint8",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "prizePool",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "protocolId",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "pure",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalVotes",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "externalEuint32",
+              name: "inputItemId",
+              type: "bytes32",
+            },
+            {
+              internalType: "bytes",
+              name: "itemIdProof",
+              type: "bytes",
+            },
+          ],
+          name: "vote",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "voters",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          stateMutability: "payable",
+          type: "receive",
+        },
+      ],
+      inheritedFunctions: {},
+      deployedOnBlock: 5,
+    },
   },
 } as const;
 
