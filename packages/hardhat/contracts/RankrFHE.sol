@@ -71,6 +71,7 @@ contract RankrFHE is SepoliaConfig {
 
         euint32 initialVotes = FHE.asEuint32(0);
         FHE.allowThis(initialVotes);
+        FHE.allow(initialVotes, msg.sender);
         
         items[itemsCount] = Item({
             author: item.author,
@@ -110,6 +111,7 @@ contract RankrFHE is SepoliaConfig {
             FHE.allowThis(voteIncrement);
             items[i].votes = FHE.add(items[i].votes, voteIncrement);
             FHE.allowThis(items[i].votes);
+            FHE.allow(items[i].votes, msg.sender);
         }
 
         hasVoted[msg.sender] = true;
