@@ -3,7 +3,7 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
 
 /**
- * Deploys Rank5Game using the deployer account.
+ * Deploys Rankr using the deployer account.
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
@@ -21,7 +21,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  // Deploy Rank5Game
+  // Deploy Rankr
   const rankrDeployment = await deploy("Rankr", {
     from: deployer,
     args: [],
@@ -39,5 +39,5 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
 export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
-// e.g. yarn deploy --tags Rank5Game
+// e.g. yarn deploy --tags Rankr
 deployYourContract.tags = ["Rankr"];

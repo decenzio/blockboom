@@ -445,7 +445,7 @@ const deployedContracts = {
     },
   },
   11155111: {
-    Rank5Game: {
+    Rankr: {
       address: "0x323CFF611A10443E79b7D97689d073e631daacB7",
       abi: [
         {
@@ -525,12 +525,12 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "enum Rank5Game.Phase",
+              internalType: "enum Rankr.Phase",
               name: "expected",
               type: "uint8",
             },
             {
-              internalType: "enum Rank5Game.Phase",
+              internalType: "enum Rankr.Phase",
               name: "current",
               type: "uint8",
             },
@@ -688,7 +688,7 @@ const deployedContracts = {
                   type: "string",
                 },
               ],
-              internalType: "struct Rank5Game.ItemInput",
+              internalType: "struct Rankr.ItemInput",
               name: "item",
               type: "tuple",
             },
@@ -730,7 +730,7 @@ const deployedContracts = {
                   type: "uint256",
                 },
               ],
-              internalType: "struct Rank5Game.Item[3]",
+              internalType: "struct Rankr.Item[3]",
               name: "",
               type: "tuple[3]",
             },
@@ -840,7 +840,7 @@ const deployedContracts = {
           name: "phase",
           outputs: [
             {
-              internalType: "enum Rank5Game.Phase",
+              internalType: "enum Rankr.Phase",
               name: "",
               type: "uint8",
             },
