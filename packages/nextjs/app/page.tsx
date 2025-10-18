@@ -29,55 +29,55 @@ const Home: NextPage = () => {
   const [showVoteShare, setShowVoteShare] = useState(false);
   const [shouldRedirectToVoting, setShouldRedirectToVoting] = useState(false);
 
-  // Contract reads - RankGame
+  // Contract reads - Rankr
   const { data: items } = useScaffoldReadContract({
-    contractName: "RankGame",
+    contractName: "Rankr",
     functionName: "getCurrentItems",
   });
 
   const { data: phase } = useScaffoldReadContract({
-    contractName: "RankGame",
+    contractName: "Rankr",
     functionName: "phase",
   });
 
   const { data: itemsCount } = useScaffoldReadContract({
-    contractName: "RankGame",
+    contractName: "Rankr",
     functionName: "itemsCount",
   });
 
   const { data: players } = useScaffoldReadContract({
-    contractName: "RankGame",
+    contractName: "Rankr",
     functionName: "getPlayers",
   });
 
   const { data: prizePool } = useScaffoldReadContract({
-    contractName: "RankGame",
+    contractName: "Rankr",
     functionName: "getPrizePool",
   });
 
   const { data: entryFee } = useScaffoldReadContract({
-    contractName: "RankGame",
+    contractName: "Rankr",
     functionName: "ENTRY_FEE",
   });
 
   const { data: numItems } = useScaffoldReadContract({
-    contractName: "RankGame",
+    contractName: "Rankr",
     functionName: "NUM_ITEMS",
   });
 
   const { data: maxPlayers } = useScaffoldReadContract({
-    contractName: "RankGame",
+    contractName: "Rankr",
     functionName: "MAX_PLAYERS",
   });
 
   const { data: userHasRanked } = useScaffoldReadContract({
-    contractName: "RankGame",
+    contractName: "Rankr",
     functionName: "hasRanked",
     args: connectedAddress ? [connectedAddress as `0x${string}`] : [undefined],
   });
 
   // Contract writes
-  const { writeContractAsync: writeRankGame } = useScaffoldWriteContract("RankGame");
+  const { writeContractAsync: writeRankr } = useScaffoldWriteContract("Rankr");
 
   // Parse game status
   const game: GameStatus | null = useMemo(() => {
@@ -135,7 +135,7 @@ const Home: NextPage = () => {
     async (title: string, author: string, url: string) => {
       setLoading(prev => ({ ...prev, addingSong: true }));
       try {
-        await writeRankGame({
+        await writeRankr({
           functionName: "addItem",
           args: [{ author, title, url }],
         });
@@ -155,7 +155,7 @@ const Home: NextPage = () => {
         setLoading(prev => ({ ...prev, addingSong: false }));
       }
     },
-    [writeRankGame, items, game],
+    [writeRankr, items, game],
   );
 
   const handleCloseAddShare = useCallback(() => {
@@ -171,7 +171,7 @@ const Home: NextPage = () => {
       setLoading(prev => ({ ...prev, voting: true }));
       try {
         const orderTuple = [rankings[0] ?? 0, rankings[1] ?? 1, rankings[2] ?? 2] as const;
-        await writeRankGame({
+        await writeRankr({
           functionName: "rankItems",
           args: [orderTuple],
           value: parseEther(amount),
@@ -183,7 +183,7 @@ const Home: NextPage = () => {
         setLoading(prev => ({ ...prev, voting: false }));
       }
     },
-    [writeRankGame],
+    [writeRankr],
   );
 
   // After your app is fully loaded and ready to display

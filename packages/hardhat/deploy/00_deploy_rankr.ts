@@ -3,11 +3,11 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
 
 /**
- * Deploys RankGameFHE using the deployer account.
+ * Deploys Rankr using the deployer account.
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
-const deployRankGameFHE: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   /*
     On localhost, the deployer account is the one that comes with Hardhat, which is already funded.
 
@@ -21,24 +21,22 @@ const deployRankGameFHE: DeployFunction = async function (hre: HardhatRuntimeEnv
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  // Deploy RankGameFHE
-  const rankGameFHEDeployment = await deploy("RankGameFHE", {
+  const rankrDeployment = await deploy("Rankr", {
     from: deployer,
     args: [],
     log: true,
     autoMine: true,
   });
 
-  const rankGameFHE = await hre.ethers.getContract<Contract>("RankGameFHE", deployer);
-  console.log("🔐 RankGameFHE deployed!", rankGameFHEDeployment.address);
-  console.log("🔢 MAX_ITEMS:", await rankGameFHE.MAX_ITEMS());
-  console.log("👥 MAX_PLAYERS:", await rankGameFHE.MAX_PLAYERS());
-  console.log("🗳️ MAX_VOTES:", await rankGameFHE.MAX_VOTES());
-  console.log("📊 Current Phase:", await rankGameFHE.phase());
+  const rankr = await hre.ethers.getContract<Contract>("Rankr", deployer);
+  console.log("🏆 Rankr deployed!", rankrDeployment.address);
+  console.log("🔢 NUM_ITEMS:", await rankr.NUM_ITEMS());
+  console.log("👥 MAX_PLAYERS:", await rankr.MAX_PLAYERS());
+  console.log("💸 ENTRY_FEE:", await rankr.ENTRY_FEE());
 };
 
-export default deployRankGameFHE;
+export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
-// e.g. yarn deploy --tags RankGameFHE
-deployRankGameFHE.tags = ["RankGameFHE"];
+// e.g. yarn deploy --tags Rankr
+deployYourContract.tags = ["Rankr"];

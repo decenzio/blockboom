@@ -11,15 +11,11 @@ pragma solidity ^0.8.25;
  *           4) Reset state for the next round
  * @dev Functionality preserved; refactored with custom errors, modifiers, NatSpec and reentrancy guard.
  */
-<<<<<<<< HEAD:packages/hardhat/contracts/RankGame.sol
-contract RankGame {
-    uint256 public constant ENTRY_FEE = 1e15; // 0.001 ETH
-========
+
 contract Rankr {
     uint256 public constant ENTRY_FEE = 1e13; // 0.0001 ETH
->>>>>>>> main:packages/hardhat/contracts/Rankr.sol
     uint8   public constant NUM_ITEMS = 3;
-    uint8   public constant MAX_PLAYERS = 8;
+    uint8   public constant MAX_PLAYERS = 2;
 
     enum Phase { CollectingItems, CollectingRanks }
     Phase public phase = Phase.CollectingItems;
@@ -100,6 +96,14 @@ contract Rankr {
     /// @param order A permutation of [0..NUM_ITEMS-1] from best to worst.
     function rankItems(uint8[NUM_ITEMS] calldata order) external payable inPhase(Phase.CollectingRanks) nonReentrant {
         if (msg.value != ENTRY_FEE) revert WrongEntryFee(msg.value);
+        
+        // Check if player has already ranked
+        for (uint8 i = 0; i < players.length; i++) {
+            if (players[i] == msg.sender) {
+                revert AlreadyRanked();
+            }
+        }
+        
         _validatePermutation(order);
 
         players.push(msg.sender);
@@ -131,6 +135,18 @@ contract Rankr {
     /// @return The prize pool balance.
     function getPrizePool() external view returns (uint256) {
         return prizePool;
+    }
+
+    /// @notice Check if an address has already ranked in the current round.
+    /// @param player The address to check.
+    /// @return True if the player has already ranked, false otherwise.
+    function hasRanked(address player) external view returns (bool) {
+        for (uint8 i = 0; i < players.length; i++) {
+            if (players[i] == player) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // --------- Internal logic ---------

@@ -2,6 +2,7 @@ import { ethers, fhevm } from "hardhat";
 import { expect } from "chai";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { FhevmType } from "@fhevm/hardhat-plugin";
+import type { RankrFHE, RankrFHE__factory } from "../typechain-types";
 
 type Signers = {
   deployer: HardhatEthersSigner;
@@ -11,8 +12,8 @@ type Signers = {
   dave: HardhatEthersSigner;
 };
 
-describe("RankGameFHE", function () {
-  let game: RankGameFHE;
+describe("RankrFHE", function () {
+  let game: RankrFHE;
   let gameAddress: string;
   let signers: Signers;
 
@@ -28,12 +29,12 @@ describe("RankGameFHE", function () {
   });
 
   beforeEach(async function () {
-    if (!fhevm.isMock) {
+    if (!fhevm || !fhevm.isMock) {
       console.warn(`This test suite requires the FHEVM mock environment`);
       this.skip();
     }
 
-    const factory = (await ethers.getContractFactory("RankGameFHE")) as RankGameFHE__factory;
+    const factory = (await ethers.getContractFactory("RankrFHE")) as RankrFHE__factory;
     game = await factory.deploy();
     gameAddress = await game.getAddress();
 

@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {FHE, euint32, externalEuint32, ebool} from "@fhevm/solidity/lib/FHE.sol";
 import {SepoliaConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 
-contract RankGameFHE is SepoliaConfig {
+contract RankrFHE is SepoliaConfig {
     uint256 public constant MAX_ITEMS = 3;
     uint256 public constant MAX_PLAYERS = 4;
     uint256 public constant MAX_VOTES = MAX_PLAYERS;
