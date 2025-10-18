@@ -3,12 +3,13 @@ pragma solidity ^0.8.25;
 
 /**
  * @title Rank5 Autonomous Game
- * @notice 5 items, 10 players. Each ranking costs 0.001 ETH.
- *         When 10th player submits, contract:
- *           1) Calculates cumulative ranking (Borda count)
- *           2) Finds player(s) closest to final order
- *           3) Splits and pays prize pool
- *           4) Resets for next round
+ * @notice Repeated rounds game with {NUM_ITEMS} items and up to {MAX_PLAYERS} players per round.
+ *         Each ranking submission requires exactly {ENTRY_FEE} wei. On reaching {MAX_PLAYERS} players:
+ *           1) Compute cumulative ranking via Borda count
+ *           2) Identify player(s) whose order matches the final order most closely
+ *           3) Split and pay the prize pool among winners (first gets remainder)
+ *           4) Reset state for the next round
+ * @dev Functionality preserved; refactored with custom errors, modifiers, NatSpec and reentrancy guard.
  */
 contract Rank5Game {
     uint256 public constant ENTRY_FEE = 1e15; // 0.001 ETH
@@ -17,6 +18,18 @@ contract Rank5Game {
 
     enum Phase { CollectingItems, CollectingRanks }
     Phase public phase = Phase.CollectingItems;
+
+    // --------- Errors ---------
+    error WrongPhase(Phase expected, Phase current);
+    error ItemsFull();
+    error InvalidItem();
+    error WrongEntryFee(uint256 provided);
+    error AlreadyRanked();
+    error IndexOutOfRange(uint8 index);
+    error DuplicateIndex(uint8 index);
+    error PayoutFailed(address to, uint256 amount);
+    error NoDirectETH();
+    error Reentrancy();
 
     struct Item {
         string author;
@@ -41,18 +54,35 @@ contract Rank5Game {
 
     uint256 public prizePool;
 
+    // Reentrancy guard (lightweight)
+    bool private _entered;
+
     event ItemAdded(uint8 indexed index, address indexed adder, uint256 addedAt, string author, string title, string url);
     event RankingSubmitted(address indexed player, uint8[NUM_ITEMS] order);
     event RoundCompleted(address[] winners, uint256 rewardPerWinner);
     event RoundReset();
 
+    // --------- Modifiers ---------
+    modifier inPhase(Phase expected) {
+        if (phase != expected) revert WrongPhase(expected, phase);
+        _;
+    }
+
+    modifier nonReentrant() {
+        if (_entered) revert Reentrancy();
+        _entered = true;
+        _;
+        _entered = false;
+    }
+
     // --------- External ---------
 
-    /// @notice Add an item with author, title and url until NUM_ITEMS exist, then switch to ranking phase
-    function addItem(ItemInput calldata item) external {
-        require(phase == Phase.CollectingItems, "not item phase");
-        require(itemsCount < NUM_ITEMS, "items full");
-        require(_isValidItemInput(item), "invalid item");
+    /// @notice Add an item with author, title and url until NUM_ITEMS exist, then switch to ranking phase.
+    /// @dev Reverts when not in CollectingItems phase, when items are full, or input is invalid.
+    /// @param item Author, title and url of the item to add.
+    function addItem(ItemInput calldata item) external inPhase(Phase.CollectingItems) {
+        if (itemsCount >= NUM_ITEMS) revert ItemsFull();
+        if (!_isValidItemInput(item)) revert InvalidItem();
 
         items[itemsCount] = Item({ author: item.author, title: item.title, url: item.url, adder: msg.sender, addedAt: block.timestamp });
         emit ItemAdded(itemsCount, msg.sender, block.timestamp, item.author, item.title, item.url);
@@ -61,11 +91,12 @@ contract Rank5Game {
         if (itemsCount == NUM_ITEMS) phase = Phase.CollectingRanks;
     }
 
-    /// @notice Submit ranking (best→worst), costs 0.001 ETH
-    function rankItems(uint8[NUM_ITEMS] calldata order) external payable {
-        require(phase == Phase.CollectingRanks, "not ranking phase");
-        require(msg.value == ENTRY_FEE, "need 0.001 ETH");
-        require(!hasRanked[msg.sender], "already ranked");
+    /// @notice Submit ranking (best→worst) for the current round by paying exactly ENTRY_FEE wei.
+    /// @dev Reverts when not in CollectingRanks phase, wrong ETH value, or sender already ranked.
+    /// @param order A permutation of [0..NUM_ITEMS-1] from best to worst.
+    function rankItems(uint8[NUM_ITEMS] calldata order) external payable inPhase(Phase.CollectingRanks) nonReentrant {
+        if (msg.value != ENTRY_FEE) revert WrongEntryFee(msg.value);
+        if (hasRanked[msg.sender]) revert AlreadyRanked();
         _validatePermutation(order);
 
         players.push(msg.sender);
@@ -82,14 +113,20 @@ contract Rank5Game {
 
     // --------- View helpers ---------
 
+    /// @notice Returns the items proposed for the current round.
+    /// @return The fixed-size array of items of length NUM_ITEMS.
     function getCurrentItems() external view returns (Item[NUM_ITEMS] memory) {
         return items;
     }
 
+    /// @notice Returns the addresses of players who have ranked in the current round so far.
+    /// @return The dynamic list of player addresses.
     function getPlayers() external view returns (address[] memory) {
         return players;
     }
 
+    /// @notice Returns the current prize pool (in wei) accumulated for the round.
+    /// @return The prize pool balance.
     function getPrizePool() external view returns (uint256) {
         return prizePool;
     }
@@ -151,7 +188,7 @@ contract Rank5Game {
         for (uint8 i = 0; i < winCount; i++) {
             uint256 amount = reward + (i == 0 ? remainder : 0);
             (bool ok, ) = winners[i].call{value: amount}("");
-            require(ok, "payout failed");
+            if (!ok) revert PayoutFailed(winners[i], amount);
         }
 
         emit RoundCompleted(winners, reward);
@@ -190,11 +227,15 @@ contract Rank5Game {
         bool[NUM_ITEMS] memory seen;
         for (uint8 i = 0; i < NUM_ITEMS; i++) {
             uint8 v = order[i];
-            require(v < NUM_ITEMS, "index out of range");
-            require(!seen[v], "duplicate");
+            if (v >= NUM_ITEMS) revert IndexOutOfRange(v);
+            if (seen[v]) revert DuplicateIndex(v);
             seen[v] = true;
         }
     }
 
-    receive() external payable { revert("no direct ETH"); }
+    /// @dev No direct ETH transfers accepted.
+    receive() external payable { revert NoDirectETH(); }
+
+    /// @dev No function selectors supported; reject unknown calls and ETH via fallback path.
+    fallback() external payable { revert NoDirectETH(); }
 }
