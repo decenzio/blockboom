@@ -26,55 +26,55 @@ const Home: NextPage = () => {
   const [showAddShare, setShowAddShare] = useState(false);
   const [showVoteShare, setShowVoteShare] = useState(false);
 
-  // Contract reads - Rank5Game
+  // Contract reads - RankGame
   const { data: items } = useScaffoldReadContract({
-    contractName: "Rank5Game",
+    contractName: "RankGame",
     functionName: "getCurrentItems",
   });
 
   const { data: phase } = useScaffoldReadContract({
-    contractName: "Rank5Game",
+    contractName: "RankGame",
     functionName: "phase",
   });
 
   const { data: itemsCount } = useScaffoldReadContract({
-    contractName: "Rank5Game",
+    contractName: "RankGame",
     functionName: "itemsCount",
   });
 
   const { data: players } = useScaffoldReadContract({
-    contractName: "Rank5Game",
+    contractName: "RankGame",
     functionName: "getPlayers",
   });
 
   const { data: prizePool } = useScaffoldReadContract({
-    contractName: "Rank5Game",
+    contractName: "RankGame",
     functionName: "getPrizePool",
   });
 
   const { data: entryFee } = useScaffoldReadContract({
-    contractName: "Rank5Game",
+    contractName: "RankGame",
     functionName: "ENTRY_FEE",
   });
 
   const { data: numItems } = useScaffoldReadContract({
-    contractName: "Rank5Game",
+    contractName: "RankGame",
     functionName: "NUM_ITEMS",
   });
 
   const { data: maxPlayers } = useScaffoldReadContract({
-    contractName: "Rank5Game",
+    contractName: "RankGame",
     functionName: "MAX_PLAYERS",
   });
 
   const { data: userHasRanked } = useScaffoldReadContract({
-    contractName: "Rank5Game",
+    contractName: "RankGame",
     functionName: "hasRanked",
     args: connectedAddress ? [connectedAddress as `0x${string}`] : [undefined],
   });
 
   // Contract writes
-  const { writeContractAsync: writeRank5 } = useScaffoldWriteContract("Rank5Game");
+  const { writeContractAsync: writeRankGame } = useScaffoldWriteContract("RankGame");
 
   // Parse game status
   const game: GameStatus | null = useMemo(() => {
@@ -114,7 +114,7 @@ const Home: NextPage = () => {
     async (title: string, author: string, url: string) => {
       setLoading(prev => ({ ...prev, addingSong: true }));
       try {
-        await writeRank5({
+        await writeRankGame({
           functionName: "addItem",
           args: [{ author, title, url }],
         });
@@ -125,7 +125,7 @@ const Home: NextPage = () => {
         setLoading(prev => ({ ...prev, addingSong: false }));
       }
     },
-    [writeRank5],
+    [writeRankGame],
   );
 
   const handleVote = useCallback(
@@ -133,7 +133,7 @@ const Home: NextPage = () => {
       setLoading(prev => ({ ...prev, voting: true }));
       try {
         const orderTuple = [rankings[0] ?? 0, rankings[1] ?? 1, rankings[2] ?? 2] as const;
-        await writeRank5({
+        await writeRankGame({
           functionName: "rankItems",
           args: [orderTuple],
           value: parseEther(amount),
@@ -145,7 +145,7 @@ const Home: NextPage = () => {
         setLoading(prev => ({ ...prev, voting: false }));
       }
     },
-    [writeRank5],
+    [writeRankGame],
   );
 
   // All hooks above this point; render based on connection state below

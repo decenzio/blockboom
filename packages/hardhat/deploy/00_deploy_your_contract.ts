@@ -3,7 +3,7 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
 
 /**
- * Deploys Rank5Game using the deployer account.
+ * Deploys RankGame using the deployer account.
  *
  * @param hre HardhatRuntimeEnvironment object.
  */
@@ -21,23 +21,23 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  // Deploy Rank5Game
-  const rank5Deployment = await deploy("Rank5Game", {
+  // Deploy RankGame
+  const rankGameDeployment = await deploy("RankGame", {
     from: deployer,
     args: [],
     log: true,
     autoMine: true,
   });
 
-  const rank5 = await hre.ethers.getContract<Contract>("Rank5Game", deployer);
-  console.log("🏆 Rank5Game deployed!", rank5Deployment.address);
-  console.log("🔢 NUM_ITEMS:", await rank5.NUM_ITEMS());
-  console.log("👥 MAX_PLAYERS:", await rank5.MAX_PLAYERS());
-  console.log("💸 ENTRY_FEE:", await rank5.ENTRY_FEE());
+  const rankGame = await hre.ethers.getContract<Contract>("RankGame", deployer);
+  console.log("🏆 RankGame deployed!", rankGameDeployment.address);
+  console.log("🔢 NUM_ITEMS:", await rankGame.NUM_ITEMS());
+  console.log("👥 MAX_PLAYERS:", await rankGame.MAX_PLAYERS());
+  console.log("💸 ENTRY_FEE:", await rankGame.ENTRY_FEE());
 };
 
 export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
-// e.g. yarn deploy --tags Rank5Game
-deployYourContract.tags = ["Rank5Game"];
+// e.g. yarn deploy --tags RankGame
+deployYourContract.tags = ["RankGame"];

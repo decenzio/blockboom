@@ -1,13 +1,13 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import type { Rank5Game } from "../typechain-types";
+import type { RankGame } from "../typechain-types";
 
-describe("Rank5Game", function () {
-  let game: Rank5Game;
+describe("RankGame", function () {
+  let game: RankGame;
 
   beforeEach(async () => {
-    const factory = await ethers.getContractFactory("Rank5Game");
-    game = (await factory.deploy()) as unknown as Rank5Game;
+    const factory = await ethers.getContractFactory("RankGame");
+    game = (await factory.deploy()) as unknown as RankGame;
     await game.waitForDeployment();
   });
 

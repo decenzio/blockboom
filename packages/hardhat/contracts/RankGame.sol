@@ -2,7 +2,7 @@
 pragma solidity ^0.8.25;
 
 /**
- * @title Rank5 Autonomous Game
+ * @title Rank Autonomous Game
  * @notice Repeated rounds game with {NUM_ITEMS} items and up to {MAX_PLAYERS} players per round.
  *         Each ranking submission requires exactly {ENTRY_FEE} wei. On reaching {MAX_PLAYERS} players:
  *           1) Compute cumulative ranking via Borda count
@@ -11,7 +11,7 @@ pragma solidity ^0.8.25;
  *           4) Reset state for the next round
  * @dev Functionality preserved; refactored with custom errors, modifiers, NatSpec and reentrancy guard.
  */
-contract Rank5Game {
+contract RankGame {
     uint256 public constant ENTRY_FEE = 1e15; // 0.001 ETH
     uint8   public constant NUM_ITEMS = 3;
     uint8   public constant MAX_PLAYERS = 2;

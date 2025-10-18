@@ -5,9 +5,9 @@
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
-  11155111: {
-    Rank5Game: {
-      address: "0x323CFF611A10443E79b7D97689d073e631daacB7",
+  31337: {
+    RankGame: {
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
         {
           inputs: [],
@@ -86,12 +86,12 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "enum Rank5Game.Phase",
+              internalType: "enum RankGame.Phase",
               name: "expected",
               type: "uint8",
             },
             {
-              internalType: "enum Rank5Game.Phase",
+              internalType: "enum RankGame.Phase",
               name: "current",
               type: "uint8",
             },
@@ -249,7 +249,7 @@ const deployedContracts = {
                   type: "string",
                 },
               ],
-              internalType: "struct Rank5Game.ItemInput",
+              internalType: "struct RankGame.ItemInput",
               name: "item",
               type: "tuple",
             },
@@ -291,7 +291,7 @@ const deployedContracts = {
                   type: "uint256",
                 },
               ],
-              internalType: "struct Rank5Game.Item[3]",
+              internalType: "struct RankGame.Item[3]",
               name: "",
               type: "tuple[3]",
             },
@@ -401,7 +401,7 @@ const deployedContracts = {
           name: "phase",
           outputs: [
             {
-              internalType: "enum Rank5Game.Phase",
+              internalType: "enum RankGame.Phase",
               name: "",
               type: "uint8",
             },
@@ -460,7 +460,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 9437922,
+      deployedOnBlock: 1,
     },
   },
 } as const;

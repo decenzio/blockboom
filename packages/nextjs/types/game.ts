@@ -1,4 +1,4 @@
-// Game-related types for Rank5Game
+// Game-related types for RankGame
 
 export interface Item {
   title: string;
